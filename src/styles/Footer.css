@@ -1,0 +1,107 @@
+/* ============================
+   FOOTER
+============================ */
+footer {
+  position: static;
+  width: 100%;
+}
+
+.footer-container {
+  background-color: rgb(225, 236, 227);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem;
+}
+
+.site-footer {
+  margin-left: 10%;
+  font-family: "Poppins", sans-serif;
+  font-size: var(--foot-font);
+  width: 90%;
+}
+
+.foot-sect {
+  width: 70%;
+  border-radius: 20%;
+  font-size: 0.8rem;
+  margin-top: 4%;
+}
+
+.foot-logo {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.pay-methods {
+  margin-left: 5%;
+  padding: 6px;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.method {
+  border: none;
+  background-color: #baebbc;
+  color: rgb(38, 88, 8);
+  font-weight: bolder;
+  border-radius: 20px;
+  padding: 0.35rem 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.foot-item-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  padding-left: 0rem;
+  gap: 10px;
+  font-weight: normal;
+}
+
+.foot-item {
+  text-decoration: none;
+  color: black;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.delivery {
+  color: var(--color-button-green);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.foot-tit {
+  font-weight: bolder;
+  font-size: medium;
+  margin-bottom: 0.5rem;
+}
+
+.license {
+  margin-top: 30px;
+  font-size: smaller;
+}
+
+.foot-logo img {
+  height: 36px;
+  width: auto;
+  margin-right: 8px;
+}
+
+/* FOOTER RESPONSIVE */
+@media (min-width: 768px) {
+  .site-footer {
+    margin-left: 10%;
+    display: flex;
+    gap: 10%;
+  }
+}
