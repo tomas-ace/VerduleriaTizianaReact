@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { fetchWithFallback, fallbackData } from '../data/mockData';
 import '../styles/Home.css';
 
-function Home() {
+function Home({ onOpenRecipeModal }) {
   const navigate = useNavigate();
   const [featuredProducts, setFeaturedProducts] = useState(
     fallbackData.productos.slice(0, 4)
@@ -357,28 +357,39 @@ function Home() {
                 </div>
                 <div className="recipe-card__content">
                   <p className="recipe-card__description">{shortDescription}</p>
-                  <button
-                    className="recipe-card__button"
-                    type="button"
-                    onClick={() => navigate('/recetas')}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="recipe-card__btn-icon"
+                  <div className="recipe-card__actions">
+                    <button
+                      className="recipe-card__btn-secondary"
+                      type="button"
+                      onClick={() => navigate(`/recetas/${recipe.id}`)}
                     >
-                      <path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z" />
-                      <path d="M6 17h12" />
-                    </svg>
-                    Preparar compra
-                  </button>
+                      Ver receta
+                    </button>
+                    <button
+                      className="recipe-card__button"
+                      type="button"
+                      onClick={() =>
+                        onOpenRecipeModal && onOpenRecipeModal(recipe)
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="recipe-card__btn-icon"
+                      >
+                        <path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z" />
+                        <path d="M6 17h12" />
+                      </svg>
+                      Preparar compra
+                    </button>
+                  </div>
                 </div>
               </article>
             );
