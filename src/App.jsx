@@ -1,122 +1,183 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Header from './components/Header/Header';
+import Footer from './components/Footer/Footer';
+import LoginModal from './components/LoginModal/LoginModal';
+import ModalPrepararCompra from './components/ModalPrepararCompra/ModalPrepararCompra';
+import Home from './Pages/home';
+import Productos from './Pages/Productos';
+import Recetas from './Pages/Recetas';
+import RecetaDetalle from './Pages/RecetaDetalle';
+import Pedidos from './Pages/Pedidos';
+import Contacto from './Pages/Contacto';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [recetaModal, setRecetaModal] = useState(null);
+  const [toastMsg, setToastMsg] = useState('');
+
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('carrito_tiziana');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('carrito_tiziana', JSON.stringify(cartItems));
+    } catch {
+      // ignore storage errors
+    }
+  }, [cartItems]);
+
+  const handleAddRecipeToCart = (ingredientsToAdd, receta, personas) => {
+    setCartItems((prev) => {
+      const updated = [...prev];
+      ingredientsToAdd.forEach((item) => {
+        const existingIndex = updated.findIndex(
+          (c) =>
+            c.idProducto === item.idProducto && c.unidad === item.unidad
+        );
+        if (existingIndex >= 0) {
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            cantidadEscalada: Number(
+              (
+                updated[existingIndex].cantidadEscalada + item.cantidadEscalada
+              ).toFixed(2)
+            ),
+            price: updated[existingIndex].price + item.price,
+          };
+        } else {
+          updated.push({ ...item });
+        }
+      });
+      return updated;
+    });
+
+    const totalSaved = ingredientsToAdd.reduce(
+      (acc, item) => acc + (item.savedAmount || 0),
+      0
+    );
+    const savingsText =
+      totalSaved > 0 ? ` — 🔥 ¡Ahorraste $${totalSaved} con ofertas del día!` : '';
+
+    setToastMsg(
+      `¡Se agregaron ${ingredientsToAdd.length} ingredientes de "${receta.title}" (${personas} pers.) al carrito!${savingsText}`
+    );
+    setTimeout(() => {
+      setToastMsg('');
+    }, 3500);
+  };
+
+  const handleAddProductToCart = (product, qtyKg, unitPrice) => {
+    const cleanQty = Number(Number(qtyKg).toFixed(2));
+    if (!cleanQty || cleanQty <= 0) return;
+    const finalUnitPrice = unitPrice ?? product.precioPorPeso;
+    const itemTotal = Math.round(cleanQty * finalUnitPrice);
+
+    setCartItems((prev) => {
+      const updated = [...prev];
+      const existingIndex = updated.findIndex(
+        (c) => c.idProducto === product.id && c.unidad === 'kg'
+      );
+      if (existingIndex >= 0) {
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          cantidadEscalada: Number(
+            (updated[existingIndex].cantidadEscalada + cleanQty).toFixed(2)
+          ),
+          price: updated[existingIndex].price + itemTotal,
+        };
+      } else {
+        updated.push({
+          idProducto: product.id,
+          nombre: product.nombre,
+          imagen: product.imagen,
+          cantidadEscalada: cleanQty,
+          unidad: 'kg',
+          displayQty: `${cleanQty} kg`,
+          price: itemTotal,
+        });
+      }
+      return updated;
+    });
+
+    setToastMsg(
+      `¡Se agregó ${cleanQty} kg de "${product.nombre}" ($${itemTotal}) al carrito!`
+    );
+    setTimeout(() => {
+      setToastMsg('');
+    }, 3500);
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+    <BrowserRouter>
+      <Header
+        onOpenLogin={() => setIsLoginOpen(true)}
+        cartCount={cartItems.length}
+      />
+      <main>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Home
+                onOpenRecipeModal={setRecetaModal}
+                onAddProduct={handleAddProductToCart}
+              />
+            }
+          />
+          <Route path="/productos" element={<Productos />} />
+          <Route
+            path="/recetas"
+            element={<Recetas onOpenRecipeModal={setRecetaModal} />}
+          />
+          <Route
+            path="/recetas/:id"
+            element={<RecetaDetalle onAddToCart={handleAddRecipeToCart} />}
+          />
+          <Route path="/pedidos" element={<Pedidos />} />
+          <Route path="/contacto" element={<Contacto />} />
+        </Routes>
+      </main>
+      <Footer />
+
+      <LoginModal
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+      />
+
+      <ModalPrepararCompra
+        receta={recetaModal}
+        onClose={() => setRecetaModal(null)}
+        onAddToCart={handleAddRecipeToCart}
+      />
+
+      {toastMsg && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            backgroundColor: '#1b5e20',
+            color: '#ffffff',
+            padding: '14px 20px',
+            borderRadius: '12px',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+            fontWeight: 600,
+            fontSize: '0.95rem',
+            zIndex: 1200,
+          }}
         >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+          ✅ {toastMsg}
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      )}
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
