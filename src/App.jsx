@@ -58,8 +58,56 @@ function App() {
       return updated;
     });
 
+    const totalSaved = ingredientsToAdd.reduce(
+      (acc, item) => acc + (item.savedAmount || 0),
+      0
+    );
+    const savingsText =
+      totalSaved > 0 ? ` — 🔥 ¡Ahorraste $${totalSaved} con ofertas del día!` : '';
+
     setToastMsg(
-      `¡Se agregaron ${ingredientsToAdd.length} ingredientes de "${receta.title}" (${personas} pers.) al carrito!`
+      `¡Se agregaron ${ingredientsToAdd.length} ingredientes de "${receta.title}" (${personas} pers.) al carrito!${savingsText}`
+    );
+    setTimeout(() => {
+      setToastMsg('');
+    }, 3500);
+  };
+
+  const handleAddProductToCart = (product, qtyKg, unitPrice) => {
+    const cleanQty = Number(Number(qtyKg).toFixed(2));
+    if (!cleanQty || cleanQty <= 0) return;
+    const finalUnitPrice = unitPrice ?? product.precioPorPeso;
+    const itemTotal = Math.round(cleanQty * finalUnitPrice);
+
+    setCartItems((prev) => {
+      const updated = [...prev];
+      const existingIndex = updated.findIndex(
+        (c) => c.idProducto === product.id && c.unidad === 'kg'
+      );
+      if (existingIndex >= 0) {
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          cantidadEscalada: Number(
+            (updated[existingIndex].cantidadEscalada + cleanQty).toFixed(2)
+          ),
+          price: updated[existingIndex].price + itemTotal,
+        };
+      } else {
+        updated.push({
+          idProducto: product.id,
+          nombre: product.nombre,
+          imagen: product.imagen,
+          cantidadEscalada: cleanQty,
+          unidad: 'kg',
+          displayQty: `${cleanQty} kg`,
+          price: itemTotal,
+        });
+      }
+      return updated;
+    });
+
+    setToastMsg(
+      `¡Se agregó ${cleanQty} kg de "${product.nombre}" ($${itemTotal}) al carrito!`
     );
     setTimeout(() => {
       setToastMsg('');
@@ -76,7 +124,12 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={<Home onOpenRecipeModal={setRecetaModal} />}
+            element={
+              <Home
+                onOpenRecipeModal={setRecetaModal}
+                onAddProduct={handleAddProductToCart}
+              />
+            }
           />
           <Route path="/productos" element={<Productos />} />
           <Route

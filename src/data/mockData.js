@@ -97,7 +97,7 @@ export const fallbackData = {
     {
       id: 11,
       nombre: 'Palta Hass',
-      precioPorPeso: 4500,
+      precioPorPeso: 1800,
       categoria: 'Frutas',
       descripcion: 'Palta de tamaño mediano.',
       imagen: '/assets/productos-img/generico-verduras.png',
@@ -235,7 +235,7 @@ export const fallbackData = {
     { IdProducto: 1, Porcentaje: 25, Estado: 'Activa' },
     { IdProducto: 2, Porcentaje: 30, Estado: 'Activa' },
     { IdProducto: 3, Porcentaje: 15, Estado: 'Activa' },
-    { IdProducto: 4, Porcentaje: 10, Estado: 'Inactiva' },
+    { IdProducto: 4, Porcentaje: 20, Estado: 'Activa' },
     { IdProducto: 5, Porcentaje: 5, Estado: 'Activa' },
   ],
   dificultad: [
@@ -608,4 +608,170 @@ export async function fetchWithFallback(endpoint, fallbackKey) {
   } catch {
     return fallbackData[fallbackKey];
   }
+}
+
+export function formatScaledIngredient(baseQty, unidad, scaleFactor) {
+  const scaled = baseQty * scaleFactor;
+  const unitLower = unidad.toLowerCase();
+
+  if (unitLower === 'gramos' && scaled >= 1000) {
+    const inKg = scaled / 1000;
+    return `${Number.isInteger(inKg) ? inKg : Number(inKg.toFixed(2))} kg`;
+  }
+
+  const rounded = Number.isInteger(scaled)
+    ? scaled
+    : Number(scaled.toFixed(2));
+  return `${rounded} ${unidad}`;
+}
+
+export function calculateIngredientPrice(
+  baseQty,
+  unidad,
+  precioPorPeso,
+  scaleFactor
+) {
+  const scaledQty = baseQty * scaleFactor;
+  const unitLower = unidad.toLowerCase();
+
+  if (unitLower === 'gramos') {
+    return (scaledQty / 1000) * precioPorPeso;
+  }
+  if (unitLower === 'kg') {
+    return scaledQty * precioPorPeso;
+  }
+  if (unitLower === 'dientes') {
+    return (scaledQty / 10) * precioPorPeso;
+  }
+  if (unitLower === 'ml') {
+    return (scaledQty / 1000) * precioPorPeso;
+  }
+  return scaledQty * precioPorPeso;
+}
+
+export function buildActiveOfferMap(ofertas = []) {
+  const map = {};
+  (ofertas || []).forEach((o) => {
+    if (o && o.Estado === 'Activa' && Number(o.Porcentaje) > 0) {
+      map[Number(o.IdProducto)] = Number(o.Porcentaje);
+    }
+  });
+  return map;
+}
+
+export function getRecipeIngredientsWithOffers(
+  recetaId,
+  ingredientes = [],
+  productos = [],
+  ofertas = [],
+  scaleFactor = 1
+) {
+  const offerMap = buildActiveOfferMap(ofertas);
+
+  return (ingredientes || [])
+    .filter((ing) => Number(ing.idReceta) === Number(recetaId))
+    .map((ing) => {
+      const prod = (productos || []).find(
+        (p) => Number(p.id) === Number(ing.idProducto)
+      );
+      if (!prod) return null;
+
+      const rawOriginal = calculateIngredientPrice(
+        ing.cantidad,
+        ing.unidad,
+        prod.precioPorPeso,
+        scaleFactor
+      );
+      const originalPrice = Math.round(rawOriginal);
+      const discountPct = offerMap[Number(prod.id)] || 0;
+      const hasOffer = discountPct > 0;
+      const price = hasOffer
+        ? Math.round(rawOriginal * (1 - discountPct / 100))
+        : originalPrice;
+
+      const displayQty = formatScaledIngredient(
+        ing.cantidad,
+        ing.unidad,
+        scaleFactor
+      );
+
+      return {
+        idProducto: prod.id,
+        nombre: prod.nombre,
+        categoria: prod.categoria,
+        imagen: prod.imagen,
+        cantidadEscalada: Number((ing.cantidad * scaleFactor).toFixed(2)),
+        unidad: ing.unidad,
+        displayQty,
+        originalPrice,
+        price,
+        discountPct,
+        hasOffer,
+        savedAmount: Math.max(0, originalPrice - price),
+      };
+    })
+    .filter(Boolean);
+}
+
+export function getRecipeOfferInfo(
+  recetaId,
+  ingredientes = [],
+  productos = [],
+  ofertas = []
+) {
+  const items = getRecipeIngredientsWithOffers(
+    recetaId,
+    ingredientes,
+    productos,
+    ofertas,
+    1
+  );
+
+  const discountedItems = items.filter((i) => i.hasOffer);
+  if (discountedItems.length === 0) {
+    return {
+      hasOffer: false,
+      maxDiscountPct: 0,
+      avgDiscountPct: 0,
+      totalOriginal: items.reduce((a, b) => a + b.originalPrice, 0),
+      totalDiscounted: items.reduce((a, b) => a + b.price, 0),
+      totalSaved: 0,
+      discountedItems: [],
+      badgeText: '',
+      detailText: '',
+    };
+  }
+
+  const maxDiscountPct = Math.max(
+    ...discountedItems.map((i) => i.discountPct)
+  );
+  const totalOriginal = items.reduce((a, b) => a + b.originalPrice, 0);
+  const totalDiscounted = items.reduce((a, b) => a + b.price, 0);
+  const totalSaved = Math.max(0, totalOriginal - totalDiscounted);
+  const avgDiscountPct =
+    totalOriginal > 0 ? Math.round((totalSaved / totalOriginal) * 100) : maxDiscountPct;
+
+  const hasVerduras = discountedItems.some(
+    (i) => (i.categoria || '').toLowerCase() === 'verduras'
+  );
+  const tipoLabel = hasVerduras ? 'verduras' : 'frutas';
+
+  const displayPct = maxDiscountPct;
+  const badgeText = `🔥 Ahorrá hasta ${displayPct}%`;
+  const detailText = discountedItems
+    .map((i) => `${i.nombre} (-${i.discountPct}%)`)
+    .join(', ');
+
+  return {
+    hasOffer: true,
+    maxDiscountPct,
+    avgDiscountPct,
+    totalOriginal,
+    totalDiscounted,
+    totalSaved,
+    discountedItems,
+    tipoLabel,
+    badgeText,
+    detailText,
+  };
 }

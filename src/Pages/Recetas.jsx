@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchWithFallback, fallbackData } from '../data/mockData';
+import {
+  fetchWithFallback,
+  fallbackData,
+  getRecipeOfferInfo,
+} from '../data/mockData';
 import '../styles/Recetas.css';
 
 function mapCategoryName(name) {
@@ -18,6 +22,11 @@ function Recetas({ onOpenRecipeModal }) {
   );
   const [catReceta, setCatReceta] = useState(fallbackData.CategoriaReceta);
   const [dificultades, setDificultades] = useState(fallbackData.dificultad);
+  const [ingredientes, setIngredientes] = useState(
+    fallbackData.ingredienteReceta
+  );
+  const [productos, setProductos] = useState(fallbackData.productos);
+  const [ofertas, setOfertas] = useState(fallbackData.Oferta);
 
   const [selectedCategory, setSelectedCategory] = useState('0');
   const [favorites, setFavorites] = useState([]);
@@ -41,6 +50,20 @@ function Recetas({ onOpenRecipeModal }) {
 
     fetchWithFallback('/dificultad', 'dificultad').then((data) => {
       if (data && data.length > 0) setDificultades(data);
+    });
+
+    fetchWithFallback('/ingredienteReceta', 'ingredienteReceta').then(
+      (data) => {
+        if (data && data.length > 0) setIngredientes(data);
+      }
+    );
+
+    fetchWithFallback('/productos', 'productos').then((data) => {
+      if (data && data.length > 0) setProductos(data);
+    });
+
+    fetchWithFallback('/Oferta', 'Oferta').then((data) => {
+      if (data && data.length > 0) setOfertas(data);
     });
   }, []);
 
@@ -86,12 +109,24 @@ function Recetas({ onOpenRecipeModal }) {
     dificultadMap[d.id] = d.nivel;
   });
 
+  const offerInfoByRecipe = {};
+  recetas.forEach((r) => {
+    offerInfoByRecipe[r.id] = getRecipeOfferInfo(
+      r.id,
+      ingredientes,
+      productos,
+      ofertas
+    );
+  });
+
   const filteredRecetas =
     selectedCategory === '0'
       ? recetas
-      : recetas.filter(
-          (r) => String(recetaCatMap[r.id]) === String(selectedCategory)
-        );
+      : selectedCategory === 'ofertas'
+        ? recetas.filter((r) => offerInfoByRecipe[r.id]?.hasOffer)
+        : recetas.filter(
+            (r) => String(recetaCatMap[r.id]) === String(selectedCategory)
+          );
 
   return (
     <div className="recetas-main-container">
@@ -160,6 +195,15 @@ function Recetas({ onOpenRecipeModal }) {
             >
               Todas
             </button>
+            <button
+              type="button"
+              className={`filter-btn filter-btn--offer ${
+                selectedCategory === 'ofertas' ? 'active' : ''
+              }`}
+              onClick={() => setSelectedCategory('ofertas')}
+            >
+              🔥 Promociones
+            </button>
             {categorias.map((cat) => (
               <button
                 key={cat.id}
@@ -226,9 +270,15 @@ function Recetas({ onOpenRecipeModal }) {
                 : description;
 
             const isFav = favorites.includes(recipe.id);
+            const offerInfo = offerInfoByRecipe[recipe.id];
 
             return (
-              <article className="receta-card" key={recipe.id}>
+              <article
+                className={`receta-card ${
+                  offerInfo?.hasOffer ? 'receta-card--has-offer' : ''
+                }`}
+                key={recipe.id}
+              >
                 <div className="receta-card__img-container">
                   <img
                     src={recipe.imagen}
@@ -236,6 +286,11 @@ function Recetas({ onOpenRecipeModal }) {
                     className="receta-card__img"
                   />
                   <div className="receta-card__badges">
+                    {offerInfo?.hasOffer && (
+                      <span className="badge-offer">
+                        {offerInfo.badgeText}
+                      </span>
+                    )}
                     <span className="badge-cat">{catName}</span>
                     <span className="badge-diff">{diffName}</span>
                   </div>

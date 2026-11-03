@@ -1,48 +1,20 @@
 import { useEffect, useState } from 'react';
-import { fetchWithFallback, fallbackData } from '../../data/mockData';
+import {
+  fetchWithFallback,
+  fallbackData,
+  getRecipeIngredientsWithOffers,
+  getRecipeOfferInfo,
+} from '../../data/mockData';
 import '../../styles/ModalPrepararCompra.css';
 
 const PRESET_PERSONAS = [2, 4, 6, 8];
-
-function formatScaledIngredient(baseQty, unidad, scaleFactor) {
-  const scaled = baseQty * scaleFactor;
-  const unitLower = unidad.toLowerCase();
-
-  if (unitLower === 'gramos' && scaled >= 1000) {
-    const inKg = scaled / 1000;
-    return `${Number.isInteger(inKg) ? inKg : Number(inKg.toFixed(2))} kg`;
-  }
-
-  const rounded = Number.isInteger(scaled)
-    ? scaled
-    : Number(scaled.toFixed(2));
-  return `${rounded} ${unidad}`;
-}
-
-function calculateIngredientPrice(baseQty, unidad, precioPorPeso, scaleFactor) {
-  const scaledQty = baseQty * scaleFactor;
-  const unitLower = unidad.toLowerCase();
-
-  if (unitLower === 'gramos') {
-    return (scaledQty / 1000) * precioPorPeso;
-  }
-  if (unitLower === 'kg') {
-    return scaledQty * precioPorPeso;
-  }
-  if (unitLower === 'dientes') {
-    return (scaledQty / 10) * precioPorPeso;
-  }
-  if (unitLower === 'ml') {
-    return (scaledQty / 1000) * precioPorPeso;
-  }
-  return scaledQty * precioPorPeso;
-}
 
 function ModalPrepararCompra({ receta, onClose, onAddToCart }) {
   const [ingredientes, setIngredientes] = useState(
     fallbackData.ingredienteReceta
   );
   const [productos, setProductos] = useState(fallbackData.productos);
+  const [ofertas, setOfertas] = useState(fallbackData.Oferta);
 
   const [personas, setPersonas] = useState(4);
   const [customValue, setCustomValue] = useState('');
@@ -56,6 +28,9 @@ function ModalPrepararCompra({ receta, onClose, onAddToCart }) {
     );
     fetchWithFallback('/productos', 'productos').then((data) => {
       if (data && data.length > 0) setProductos(data);
+    });
+    fetchWithFallback('/Oferta', 'Oferta').then((data) => {
+      if (data && data.length > 0) setOfertas(data);
     });
   }, []);
 
@@ -80,47 +55,34 @@ function ModalPrepararCompra({ receta, onClose, onAddToCart }) {
   const time = 15 + (receta.id % 5) * 10;
   const kcal = 150 + (receta.id % 10) * 40;
 
-  const recetaIngredientes = ingredientes
-    .filter((ing) => Number(ing.idReceta) === Number(receta.id))
-    .map((ing) => {
-      const prod = productos.find((p) => Number(p.id) === Number(ing.idProducto));
-      if (!prod) return null;
+  const recetaIngredientes = getRecipeIngredientsWithOffers(
+    receta.id,
+    ingredientes,
+    productos,
+    ofertas,
+    scaleFactor
+  );
 
-      const price = Math.round(
-        calculateIngredientPrice(
-          ing.cantidad,
-          ing.unidad,
-          prod.precioPorPeso,
-          scaleFactor
-        )
-      );
-
-      const displayQty = formatScaledIngredient(
-        ing.cantidad,
-        ing.unidad,
-        scaleFactor
-      );
-
-      return {
-        idProducto: prod.id,
-        nombre: prod.nombre,
-        imagen: prod.imagen,
-        cantidadEscalada: Number((ing.cantidad * scaleFactor).toFixed(2)),
-        unidad: ing.unidad,
-        displayQty,
-        price,
-      };
-    })
-    .filter(Boolean);
+  const offerInfo = getRecipeOfferInfo(
+    receta.id,
+    ingredientes,
+    productos,
+    ofertas
+  );
 
   const activeIngredients = recetaIngredientes.filter(
     (item) => !excludedIds.includes(item.idProducto)
   );
 
+  const totalOriginal = activeIngredients.reduce(
+    (acc, item) => acc + item.originalPrice,
+    0
+  );
   const totalEstimado = activeIngredients.reduce(
     (acc, item) => acc + item.price,
     0
   );
+  const totalSaved = Math.max(0, totalOriginal - totalEstimado);
 
   const handleSelectPreset = (num) => {
     setPersonas(num);
@@ -202,6 +164,17 @@ function ModalPrepararCompra({ receta, onClose, onAddToCart }) {
         </div>
 
         <div className="prep-modal__body">
+          {offerInfo.hasOffer && (
+            <div className="prep-modal__offer-banner">
+              <span className="prep-modal__offer-main">
+                {offerInfo.badgeText}
+              </span>
+              <span className="prep-modal__offer-sub">
+                En oferta: {offerInfo.detailText}
+              </span>
+            </div>
+          )}
+
           <h3 className="prep-modal__section-title">
             ¿Para cuántas personas?
           </h3>
@@ -269,7 +242,16 @@ function ModalPrepararCompra({ receta, onClose, onAddToCart }) {
                       className="prep-ing-item__img"
                     />
                     <div className="prep-ing-item__info">
-                      <span className="prep-ing-item__name">{item.nombre}</span>
+                      <div className="prep-ing-item__name-row">
+                        <span className="prep-ing-item__name">
+                          {item.nombre}
+                        </span>
+                        {item.hasOffer && (
+                          <span className="prep-ing-item__offer-tag">
+                            -{item.discountPct}% HOY
+                          </span>
+                        )}
+                      </div>
                       <span className="prep-ing-item__qty">
                         {item.displayQty}
                       </span>
@@ -277,7 +259,16 @@ function ModalPrepararCompra({ receta, onClose, onAddToCart }) {
                   </div>
 
                   <div className="prep-ing-item__right">
-                    <span className="prep-ing-item__price">${item.price}</span>
+                    <div className="prep-ing-item__price-col">
+                      {item.hasOffer && (
+                        <del className="prep-ing-item__price-old">
+                          ${item.originalPrice}
+                        </del>
+                      )}
+                      <span className="prep-ing-item__price">
+                        ${item.price}
+                      </span>
+                    </div>
                     <button
                       type="button"
                       className={`prep-ing-toggle-btn ${
@@ -301,8 +292,20 @@ function ModalPrepararCompra({ receta, onClose, onAddToCart }) {
 
         <div className="prep-modal__footer">
           <div className="prep-modal__total-row">
-            <span className="prep-modal__total-label">Total estimado</span>
-            <span className="prep-modal__total-value">${totalEstimado}</span>
+            <div className="prep-modal__total-left">
+              <span className="prep-modal__total-label">Total</span>
+              {totalSaved > 0 && (
+                <span className="prep-modal__savings-badge">
+                  🔥 Ahorrás ${totalSaved}
+                </span>
+              )}
+            </div>
+            <div className="prep-modal__total-right">
+              {totalSaved > 0 && (
+                <del className="prep-modal__total-old">${totalOriginal}</del>
+              )}
+              <span className="prep-modal__total-value">${totalEstimado}</span>
+            </div>
           </div>
 
           <button

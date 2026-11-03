@@ -116,6 +116,23 @@
   color: white;
 }
 
+.filter-btn--offer {
+  background-color: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc80;
+  font-weight: 700;
+}
+
+.filter-btn--offer:hover {
+  background-color: #ffe0b2;
+}
+
+.filter-btn--offer.active {
+  background-color: #e65100;
+  color: #ffffff;
+  border-color: #e65100;
+}
+
 /* Grid */
 .recetas-grid {
   display: grid;
@@ -133,6 +150,32 @@
   display: flex;
   flex-direction: column;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.receta-card--has-offer {
+  border: 1.5px solid #ffb74d;
+}
+
+.receta-card__offer-banner {
+  background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%);
+  border-bottom: 1px solid #ffcc80;
+  padding: 0.6rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.receta-card__offer-main {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #bf360c;
+  line-height: 1.3;
+}
+
+.receta-card__offer-sub {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #e65100;
 }
 
 .receta-card:hover {
@@ -154,28 +197,42 @@
 
 .receta-card__badges {
   position: absolute;
-  top: 1rem;
-  left: 1rem;
+  top: 0.85rem;
+  left: 0.85rem;
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  max-width: calc(100% - 3.8rem);
+  z-index: 2;
 }
 
 .receta-card .badge-cat,
-.receta-card .badge-diff {
-  padding: 0.3rem 0.8rem;
+.receta-card .badge-diff,
+.receta-card .badge-offer {
+  padding: 0.3rem 0.75rem;
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: white;
+  display: inline-flex;
+  align-items: center;
 }
 
 .receta-card .badge-cat {
   background-color: rgba(0, 0, 0, 0.6);
+  color: white;
 }
 
 .receta-card .badge-diff {
   background-color: #a5d6a7;
   color: #1b5e20;
+}
+
+.receta-card .badge-offer {
+  background: linear-gradient(135deg, #ff6d00 0%, #ff9100 100%);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(255, 109, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .receta-card__fav {

@@ -1,34 +1,96 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { fetchWithFallback, fallbackData } from '../data/mockData';
+import {
+  fetchWithFallback,
+  fallbackData,
+  getRecipeOfferInfo,
+} from '../data/mockData';
 import '../styles/Home.css';
 
-function Home({ onOpenRecipeModal }) {
+function Home({ onOpenRecipeModal, onAddProduct }) {
   const navigate = useNavigate();
   const [featuredProducts, setFeaturedProducts] = useState(
-    fallbackData.productos.slice(0, 4)
+    fallbackData.productos.slice(4, 7)
   );
   const [allProducts, setAllProducts] = useState(fallbackData.productos);
-  const [offers, setOffers] = useState(fallbackData.Oferta);
+  const [offers, setOffers] = useState(
+    fallbackData.Oferta.filter((o) => o.Estado === 'Activa').slice(0, 4)
+  );
+  const [allOffers, setAllOffers] = useState(fallbackData.Oferta);
+  const [ingredientes, setIngredientes] = useState(
+    fallbackData.ingredienteReceta
+  );
   const [recipes, setRecipes] = useState(fallbackData.recetas.slice(0, 6));
   const [dificultades, setDificultades] = useState(fallbackData.dificultad);
+  const [quantities, setQuantities] = useState({});
+
+  const getQtyString = (key) =>
+    quantities[key] !== undefined ? String(quantities[key]) : '0.5';
+
+  const getNumericQty = (key) => {
+    const raw = quantities[key];
+    const parsed = parseFloat(String(raw ?? '0.5').replace(',', '.'));
+    return Number.isNaN(parsed) || parsed <= 0 ? 0.5 : parsed;
+  };
+
+  const handleStepQty = (key, delta) => {
+    const current = getNumericQty(key);
+    const next = Math.max(0.5, Number((current + delta).toFixed(2)));
+    setQuantities((prev) => ({ ...prev, [key]: String(next) }));
+  };
+
+  const handleQtyKeyDown = (e) => {
+    if (['-', '+', 'e', 'E'].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleQtyChange = (key, value) => {
+    const normalized = value.replace(',', '.');
+    if (normalized === '') {
+      setQuantities((prev) => ({ ...prev, [key]: '' }));
+      return;
+    }
+    if (!/^\d*\.?\d*$/.test(normalized)) {
+      return;
+    }
+    const num = parseFloat(normalized);
+    if (!Number.isNaN(num) && num > 100) {
+      setQuantities((prev) => ({ ...prev, [key]: '100' }));
+      return;
+    }
+    setQuantities((prev) => ({ ...prev, [key]: normalized }));
+  };
+
+  const handleQtyBlur = (key) => {
+    const num = getNumericQty(key);
+    setQuantities((prev) => ({
+      ...prev,
+      [key]: String(Number(num.toFixed(2))),
+    }));
+  };
 
   useEffect(() => {
     fetchWithFallback('/productos', 'productos').then((products) => {
       if (products && products.length > 0) {
         setAllProducts(products);
-        setFeaturedProducts(products.slice(0, 4));
+        setFeaturedProducts(products.slice(4, 7));
       }
     });
 
-    fetchWithFallback('/Oferta?Estado=Activa&_limit=3', 'Oferta').then(
-      (activeOffers) => {
-        if (activeOffers && activeOffers.length > 0) {
-          setOffers(
-            activeOffers
-              .filter((o) => o.Estado === 'Activa')
-              .slice(0, 3)
-          );
+    fetchWithFallback('/Oferta', 'Oferta').then((offersData) => {
+      if (offersData && offersData.length > 0) {
+        setAllOffers(offersData);
+        setOffers(
+          offersData.filter((o) => o.Estado === 'Activa').slice(0, 4)
+        );
+      }
+    });
+
+    fetchWithFallback('/ingredienteReceta', 'ingredienteReceta').then(
+      (ingData) => {
+        if (ingData && ingData.length > 0) {
+          setIngredientes(ingData);
         }
       }
     );
@@ -193,11 +255,11 @@ function Home({ onOpenRecipeModal }) {
 
       <section className="featured-products">
         <div className="featured-products__header">
-          <span className="featured-products__subtitle">
-            LO MEJOR DE LA SEMANA
+          <span className="daily-offers__subtitle">
+            PRECIOS ESPECIALES
           </span>
           <div className="featured-products__title-row">
-            <h2 className="featured-products__title">Productos destacados</h2>
+            <h2 className="featured-products__title">Ofertas del día</h2>
             <Link to="/productos" className="featured-products__link">
               Ver todos
               <svg
@@ -219,78 +281,163 @@ function Home({ onOpenRecipeModal }) {
           </div>
         </div>
 
-        <div className="cards-grid" id="featured-products-container">
-          {featuredProducts.map((product) => (
-            <article className="product-card" key={product.id}>
-              <div className="product-card__image-container">
-                <img
-                  src={product.imagen}
-                  alt={product.nombre}
-                  className="product-card__image"
-                />
-                <span className="product-card__badge product-card__badge--green">
-                  Destacado
-                </span>
-              </div>
-              <div className="product-card__content">
-                <span className="product-card__category">
-                  {product.categoria.toUpperCase()}
-                </span>
-                <h3 className="product-card__name">{product.nombre}</h3>
-                <p className="product-card__description">
-                  {product.descripcion}
-                </p>
-                <div className="product-card__footer">
-                  <span className="product-card__price">
-                    ${product.precioPorPeso} <br />
-                    <small className="product-card__price--unit">/kg</small>
+        <div className="cards-grid" id="daily-offers-container">
+          {offers.map((offer) => {
+            const product = allProducts.find((p) => p.id === offer.IdProducto);
+            if (!product) return null;
+            const discountedPrice = Math.round(
+              product.precioPorPeso * (1 - offer.Porcentaje / 100)
+            );
+            const qtyKey = `offer-${product.id}`;
+
+            return (
+              <article className="product-card" key={offer.IdProducto}>
+                <div className="product-card__image-container">
+                  <img
+                    src={product.imagen}
+                    alt={product.nombre}
+                    className="product-card__image"
+                  />
+                  <span className="product-card__badge product-card__badge--yellow">
+                    -{offer.Porcentaje}% HOY
                   </span>
-                  <button className="product-card__button" type="button">
-                    + Agregar
-                  </button>
                 </div>
-              </div>
-            </article>
-          ))}
+                <div className="product-card__content">
+                  <span className="product-card__category">
+                    {product.categoria.toUpperCase()}
+                  </span>
+                  <h3 className="product-card__name">{product.nombre}</h3>
+                  <p className="product-card__description">
+                    {product.descripcion}
+                  </p>
+                  <div className="product-card__footer">
+                    <div className="product-card__price">
+                      <span className="product-card__price--discount">
+                        ${product.precioPorPeso}
+                      </span>
+                      <span className="product-card__price--current">
+                        ${discountedPrice}
+                        <small className="product-card__price--unit">/kg</small>
+                      </span>
+                    </div>
+
+                    <div className="product-card__actions-right">
+
+                      <div className="qty-stepper" aria-label="Cantidad en kilos">
+                        <button
+                          type="button"
+                          className="qty-stepper__btn"
+                          onClick={() => handleStepQty(qtyKey, -0.5)}
+                          aria-label="Disminuir medio kilo"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          className="qty-stepper__input"
+                          value={getQtyString(qtyKey)}
+                          onKeyDown={handleQtyKeyDown}
+                          onChange={(e) =>
+                            handleQtyChange(qtyKey, e.target.value)
+                          }
+                          onBlur={() => handleQtyBlur(qtyKey)}
+                          aria-label={`Kilos de ${product.nombre}`}
+                        />
+                        <button
+                          type="button"
+                          className="qty-stepper__btn"
+                          onClick={() => handleStepQty(qtyKey, 0.5)}
+                          aria-label="Aumentar medio kilo"
+                        >
+                          +
+                        </button>
+                      </div>
+                      
+                      <button
+                        className="product-card__button"
+                        type="button"
+                        onClick={() =>
+                          onAddProduct &&
+                          onAddProduct(
+                            product,
+                            getNumericQty(qtyKey),
+                            discountedPrice
+                          )
+                        }
+                      >
+                        + Agregar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
       <section className="daily-offers">
         <div className="daily-offers__header">
-          <span className="daily-offers__subtitle">PRECIOS ESPECIALES</span>
-          <h2 className="daily-offers__title">Ofertas del día</h2>
+          <span className="featured-products__subtitle">
+            LO MEJOR DE LA SEMANA
+          </span>
+          <h2 className="daily-offers__title">Productos destacados</h2>
         </div>
 
-        <div className="daily-offers__grid" id="daily-offers-container">
-          {offers.map((offer) => {
-            const product = allProducts.find((p) => p.id === offer.IdProducto);
-            if (!product) return null;
-            const discountedPrice =
-              product.precioPorPeso * (1 - offer.Porcentaje / 100);
+        <div className="daily-offers__grid" id="featured-products-container">
+          {featuredProducts.map((product) => {
+            const qtyKey = `feat-${product.id}`;
 
             return (
-              <article className="offer-card" key={offer.IdProducto}>
+              <article className="offer-card" key={product.id}>
                 <img
                   src={product.imagen}
                   alt={product.nombre}
                   className="offer-card__image"
                 />
                 <div className="offer-card__info">
-                  <span className="offer-card__tag">
-                    -{offer.Porcentaje}% HOY
+                  <span className="offer-card__tag offer-card__tag--green">
+                    Destacado
                   </span>
                   <h3 className="offer-card__name">{product.nombre}</h3>
                   <p className="offer-card__price">
-                    <strong>${discountedPrice.toFixed(0)}</strong>{' '}
-                    <del>${product.precioPorPeso}</del>{' '}
+                    <strong>${product.precioPorPeso}</strong>{' '}
                     <span className="offer-card__price-unit">/kg</span>
                   </p>
-                  <button className="offer-card__button" type="button">
-                    <span className="offer-card__button-plus">+</span>
-                    <span className="offer-card__button-text">
-                      Agregar al carrito
-                    </span>
-                  </button>
+                  <div className="offer-card__actions-row">
+
+                    <div className="qty-stepper" aria-label="Cantidad en kilos">
+                      <button
+                        type="button"
+                        className="qty-stepper__btn"
+                        onClick={() => handleStepQty(qtyKey, -0.5)}
+                        aria-label="Disminuir medio kilo"
+                      >
+                        −
+                      </button>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        className="qty-stepper__input"
+                        value={getQtyString(qtyKey)}
+                        onKeyDown={handleQtyKeyDown}
+                        onChange={(e) =>
+                          handleQtyChange(qtyKey, e.target.value)
+                        }
+                        onBlur={() => handleQtyBlur(qtyKey)}
+                        aria-label={`Kilos de ${product.nombre}`}
+                      />
+                      <button
+                        type="button"
+                        className="qty-stepper__btn"
+                        onClick={() => handleStepQty(qtyKey, 0.5)}
+                        aria-label="Aumentar medio kilo"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </article>
             );
@@ -335,15 +482,31 @@ function Home({ onOpenRecipeModal }) {
               (d) => d.id === recipe.idDificultad
             );
             const nivelDificultad = dificultad ? dificultad.nivel : 'Media';
+            const offerInfo = getRecipeOfferInfo(
+              recipe.id,
+              ingredientes,
+              allProducts,
+              allOffers
+            );
 
             return (
-              <article className="recipe-card" key={recipe.id}>
+              <article
+                className={`recipe-card ${
+                  offerInfo.hasOffer ? 'recipe-card--has-offer' : ''
+                }`}
+                key={recipe.id}
+              >
                 <div className="recipe-card__image-container">
                   <img
                     src={recipe.imagen}
                     alt={recipe.title}
                     className="recipe-card__image"
                   />
+                  {offerInfo.hasOffer && (
+                    <span className="recipe-card__badge-offer">
+                      {offerInfo.badgeText}
+                    </span>
+                  )}
                   <span className="recipe-card__badge">{nivelDificultad}</span>
                   <div className="recipe-card__overlay">
                     <h3 className="recipe-card__title">{recipe.title}</h3>

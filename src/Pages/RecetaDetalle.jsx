@@ -1,43 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { fetchWithFallback, fallbackData } from '../data/mockData';
+import {
+  fetchWithFallback,
+  fallbackData,
+  getRecipeIngredientsWithOffers,
+  getRecipeOfferInfo,
+} from '../data/mockData';
 import '../styles/RecetaDetalle.css';
 
 const PRESET_PERSONAS = [2, 4, 6, 8];
-
-function formatScaledIngredient(baseQty, unidad, scaleFactor) {
-  const scaled = baseQty * scaleFactor;
-  const unitLower = unidad.toLowerCase();
-
-  if (unitLower === 'gramos' && scaled >= 1000) {
-    const inKg = scaled / 1000;
-    return `${Number.isInteger(inKg) ? inKg : Number(inKg.toFixed(2))} kg`;
-  }
-
-  const rounded = Number.isInteger(scaled)
-    ? scaled
-    : Number(scaled.toFixed(2));
-  return `${rounded} ${unidad}`;
-}
-
-function calculateIngredientPrice(baseQty, unidad, precioPorPeso, scaleFactor) {
-  const scaledQty = baseQty * scaleFactor;
-  const unitLower = unidad.toLowerCase();
-
-  if (unitLower === 'gramos') {
-    return (scaledQty / 1000) * precioPorPeso;
-  }
-  if (unitLower === 'kg') {
-    return scaledQty * precioPorPeso;
-  }
-  if (unitLower === 'dientes') {
-    return (scaledQty / 10) * precioPorPeso;
-  }
-  if (unitLower === 'ml') {
-    return (scaledQty / 1000) * precioPorPeso;
-  }
-  return scaledQty * precioPorPeso;
-}
 
 function RecetaDetalle({ onAddToCart }) {
   const { id } = useParams();
@@ -48,6 +19,7 @@ function RecetaDetalle({ onAddToCart }) {
     fallbackData.ingredienteReceta
   );
   const [productos, setProductos] = useState(fallbackData.productos);
+  const [ofertas, setOfertas] = useState(fallbackData.Oferta);
   const [dificultades, setDificultades] = useState(fallbackData.dificultad);
   const [catReceta, setCatReceta] = useState(fallbackData.CategoriaReceta);
   const [categorias, setCategorias] = useState(fallbackData.categorias);
@@ -77,6 +49,9 @@ function RecetaDetalle({ onAddToCart }) {
     });
     fetchWithFallback('/productos', 'productos').then((data) => {
       if (data && data.length > 0) setProductos(data);
+    });
+    fetchWithFallback('/Oferta', 'Oferta').then((data) => {
+      if (data && data.length > 0) setOfertas(data);
     });
     fetchWithFallback('/dificultad', 'dificultad').then((data) => {
       if (data && data.length > 0) setDificultades(data);
@@ -118,47 +93,34 @@ function RecetaDetalle({ onAddToCart }) {
 
   const scaleFactor = comensales / baseComensales;
 
-  const calculatedIngredients = ingredientes
-    .filter((ing) => Number(ing.idReceta) === recetaId)
-    .map((ing) => {
-      const prod = productos.find((p) => Number(p.id) === Number(ing.idProducto));
-      if (!prod) return null;
+  const calculatedIngredients = getRecipeIngredientsWithOffers(
+    recetaId,
+    ingredientes,
+    productos,
+    ofertas,
+    scaleFactor
+  );
 
-      const price = Math.round(
-        calculateIngredientPrice(
-          ing.cantidad,
-          ing.unidad,
-          prod.precioPorPeso,
-          scaleFactor
-        )
-      );
-
-      const displayQty = formatScaledIngredient(
-        ing.cantidad,
-        ing.unidad,
-        scaleFactor
-      );
-
-      return {
-        idProducto: prod.id,
-        nombre: prod.nombre,
-        imagen: prod.imagen,
-        cantidadEscalada: Number((ing.cantidad * scaleFactor).toFixed(2)),
-        unidad: ing.unidad,
-        displayQty,
-        price,
-      };
-    })
-    .filter(Boolean);
+  const offerInfo = getRecipeOfferInfo(
+    recetaId,
+    ingredientes,
+    productos,
+    ofertas
+  );
 
   const activeIngredients = calculatedIngredients.filter(
     (item) => !excludedIds.includes(item.idProducto)
   );
 
+  const totalOriginalCost = activeIngredients.reduce(
+    (acc, item) => acc + item.originalPrice,
+    0
+  );
   const totalCost = activeIngredients.reduce(
     (acc, item) => acc + item.price,
     0
   );
+  const totalSaved = Math.max(0, totalOriginalCost - totalCost);
   const costPerPerson = comensales > 0 ? totalCost / comensales : 0;
 
   const handleSelectPreset = (num) => {
@@ -239,6 +201,11 @@ function RecetaDetalle({ onAddToCart }) {
               >
                 👥 Para {comensales} {comensales === 1 ? 'persona' : 'personas'}
               </span>
+              {offerInfo.hasOffer && (
+                <span className="badge-offer-hero">
+                  {offerInfo.badgeText}
+                </span>
+              )}
             </div>
             <h1 className="detalle-title">{receta.title}</h1>
           </div>
@@ -321,9 +288,29 @@ function RecetaDetalle({ onAddToCart }) {
                 </div>
               </div>
 
+              {offerInfo.hasOffer && (
+                <div className="detalle-offer-alert">
+                  <div className="detalle-offer-alert__title">
+                    {offerInfo.badgeText}
+                  </div>
+                </div>
+              )}
+
               <div className="cost-box">
                 <div className="cost-label">Costo de Receta</div>
-                <div className="cost-value">${Math.round(totalCost)}</div>
+                <div className="cost-value-row">
+                  {totalSaved > 0 && (
+                    <del className="cost-original">
+                      ${Math.round(totalOriginalCost)}
+                    </del>
+                  )}
+                  <div className="cost-value">${Math.round(totalCost)}</div>
+                </div>
+                {totalSaved > 0 && (
+                  <div className="cost-savings-pill">
+                    Ahorrás ${Math.round(totalSaved)} en esta receta
+                  </div>
+                )}
                 <div className="cost-per-person">
                   <strong>${Math.round(costPerPerson)}</strong> por persona
                 </div>
@@ -355,7 +342,7 @@ function RecetaDetalle({ onAddToCart }) {
                     <li
                       className={`ingredient-item ${
                         isExcluded ? 'excluded' : ''
-                      }`}
+                      } ${item.hasOffer ? 'ingredient-item--offer' : ''}`}
                       key={item.idProducto}
                     >
                       <div className="ingredient-item__left">
@@ -365,7 +352,16 @@ function RecetaDetalle({ onAddToCart }) {
                           className="ingredient-item__img"
                         />
                         <div className="ingredient-item__info">
-                          <span className="ingredient-name">{item.nombre}</span>
+                          <div className="ingredient-name-row">
+                            <span className="ingredient-name">
+                              {item.nombre}
+                            </span>
+                            {item.hasOffer && (
+                              <span className="ingredient-offer-tag">
+                                -{item.discountPct}%
+                              </span>
+                            )}
+                          </div>
                           <span className="ingredient-qty">
                             {item.displayQty}
                           </span>
@@ -373,7 +369,16 @@ function RecetaDetalle({ onAddToCart }) {
                       </div>
 
                       <div className="ingredient-item__right">
-                        <span className="ingredient-price">${item.price}</span>
+                        <div className="ingredient-price-col">
+                          {item.hasOffer && (
+                            <del className="ingredient-price-old">
+                              ${item.originalPrice}
+                            </del>
+                          )}
+                          <span className="ingredient-price">
+                            ${item.price}
+                          </span>
+                        </div>
                         <button
                           type="button"
                           className={`ingredient-toggle-btn ${

@@ -85,6 +85,16 @@
   border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
+.badge-offer-hero {
+  background: linear-gradient(90deg, #ff6d00, #ff9100);
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(255, 109, 0, 0.35);
+}
+
 .detalle-title {
   font-size: 2.5rem;
   font-weight: 800;
@@ -230,6 +240,27 @@
   border-color: #2e7d32;
 }
 
+.detalle-offer-alert {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 1.5px solid #ffb74d;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.detalle-offer-alert__title {
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #bf360c;
+  margin-bottom: 4px;
+}
+
+.detalle-offer-alert__desc {
+  font-size: 0.78rem;
+  color: #e65100;
+  line-height: 1.35;
+}
+
 .cost-box {
   background: white;
   border-radius: 12px;
@@ -248,11 +279,37 @@
   margin-bottom: 5px;
 }
 
+.cost-value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+}
+
+.cost-original {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
 .cost-value {
   font-size: 2.5rem;
   font-weight: 800;
   color: #20c997;
   margin: 0;
+}
+
+.cost-savings-pill {
+  display: inline-block;
+  margin-top: 6px;
+  background-color: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc80;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 
 .cost-per-person {
@@ -310,10 +367,28 @@
   min-width: 0;
 }
 
+.ingredient-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .ingredient-name {
   font-weight: 600;
   color: #2d3748;
   font-size: 0.92rem;
+}
+
+.ingredient-offer-tag {
+  background-color: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc80;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
 .ingredient-item.excluded .ingredient-name {
@@ -330,6 +405,19 @@
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+.ingredient-price-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+}
+
+.ingredient-price-old {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  text-decoration: line-through;
 }
 
 .ingredient-price {
