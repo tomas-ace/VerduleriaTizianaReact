@@ -598,6 +598,65 @@ export const fallbackData = {
       contrasena: '1234',
     },
   ],
+  pedidos: [
+    {
+      nroPedido: 1001,
+      estado: 'Entregado',
+      idUsuario: 1,
+      fecha: '2023-11-01T10:00:00Z',
+    },
+    {
+      nroPedido: 1002,
+      estado: 'Preparando',
+      idUsuario: 2,
+      fecha: '2023-11-02T11:30:00Z',
+    },
+    {
+      nroPedido: 1003,
+      estado: 'En Camino',
+      idUsuario: 3,
+      fecha: '2023-11-02T15:45:00Z',
+    },
+    {
+      nroPedido: 1004,
+      estado: 'En Camino',
+      idUsuario: 3,
+      fecha: '2023-11-02T15:45:00Z',
+    },
+  ],
+  
+  pedidoDetalle: [
+    {
+      idPedido: 1001,
+      idProducto: 1,
+      cantidad: 2.5,
+      precio: 3000,
+    },
+    {
+      idPedido: 1001,
+      idProducto: 3,
+      cantidad: 1,
+      precio: 700,
+    },
+    {
+      idPedido: 1002,
+      idProducto: 5,
+      cantidad: 2,
+      precio: 3000,
+    },
+    {
+      idPedido: 1003,
+      idProducto: 14,
+      cantidad: 1.5,
+      precio: 750,
+    },
+    {
+      idPedido: 1003,
+      idProducto: 12,
+      cantidad: 1,
+      precio: 3500,
+    },
+  ],
 };
 
 export async function fetchWithFallback(endpoint, fallbackKey) {
