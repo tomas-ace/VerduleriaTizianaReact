@@ -1,0 +1,147 @@
+.pedidos-page {
+    padding: 40px 20px;
+}
+.pedidos-page .container-registered {
+    max-width: 960px;
+    margin: 0 auto;
+}
+.pedidos-page h1 {
+    font-size: 2rem;
+    color: #1f1f1f;
+    margin: 0 0 6px 0;
+}
+.pedidos-page .container-registered > p {
+    color: #555;
+    font-size: 15px;
+    margin: 0 0 4px 0;
+}
+.pedidos-page .order-number {
+    color: #777;
+    margin: 0 0 24px 0;
+    font-size: 14px;
+}
+.pedidos-page #orders-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.pedidos-page .pedido {
+    width: 100%;
+    min-height: 108px;
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 22px 26px;
+
+    background-color: white;
+    border: 1.5px solid #c5dfc8;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.pedidos-page .pedido:hover {
+    border-color: #16821f;
+    box-shadow: 0 6px 16px rgba(22, 130, 31, 0.1);
+    transform: translateY(-2px);
+}
+
+.pedidos-page .pedido-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pedidos-page .top-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.pedidos-page .top-info p {
+    margin: 0;
+}
+
+.pedidos-page .top-info p:first-child {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #222;
+}
+
+.pedidos-page .lower-info {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    color: #777;
+    font-size: 14px;
+}
+
+.pedidos-page .lower-info p {
+    margin: 0;
+}
+
+.pedidos-page .detalle-pedido {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.pedidos-page .precio {
+    color: #16821f;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.pedidos-page .detalle {
+    color: #16821f;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.pedidos-page .detalle:hover {
+    text-decoration: underline;
+}
+.pedidos-page .preparando,
+.pedidos-page .en-camino,
+.pedidos-page .entregado {
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.pedidos-page .preparando {
+    background-color: #fff4e5;
+    color: #d97900;
+}
+
+.pedidos-page .en-camino {
+    background-color: #e2e2ec;
+    color: #3437ec;
+}
+
+.pedidos-page .entregado {
+    background-color: #d3e9d6;
+    color: #033b16;
+}
+
+@media (max-width: 600px) {
+    .pedidos-page .pedido {
+        align-items: flex-start;
+        gap: 15px;
+        padding: 16px;
+    }
+
+    .pedidos-page .precio {
+        font-size: 1.2rem;
+    }
+}
