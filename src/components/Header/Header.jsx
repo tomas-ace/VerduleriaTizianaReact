@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import logo from '../../assets/img/logo.png';
 import '../../styles/Header.css';
 
-function Header({ onOpenLogin, cartCount = 0 }) {
+function Header({ onOpenLogin, cartCount = 0,usuarioId  }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -134,14 +134,24 @@ function Header({ onOpenLogin, cartCount = 0 }) {
             </NavLink>
           </li>
           <li className="mobile-only-btn">
-            <button
-              className="btn-ingresar-header mobile-btn"
-              id="btn-ingresar-mobile"
-              type="button"
-              onClick={handleOpenLogin}
-            >
-              Ingresar
-            </button>
+            {usuarioId ? (
+              <Link
+                className="btn-ingresar-header mobile-btn"
+                to="/perfil"
+                onClick={closeMenu}
+              >
+                Mi perfil
+              </Link>
+            ) : (
+              <button
+                className="btn-ingresar-header mobile-btn"
+                id="btn-ingresar-mobile"
+                type="button"
+                onClick={handleOpenLogin}
+              >
+                Ingresar
+              </button>
+            )}
           </li>
         </ul>
         <ul className="nav-buttons">
@@ -177,14 +187,20 @@ function Header({ onOpenLogin, cartCount = 0 }) {
             </button>
           </li>
           <li className="desktop-only-btn">
-            <button
-              className="btn-ingresar-header"
-              id="btn-ingresar"
-              type="button"
-              onClick={handleOpenLogin}
-            >
-              Ingresar
-            </button>
+            {usuarioId ? (
+              <Link className="btn-ingresar-header" to="/perfil">
+                Mi perfil
+              </Link>
+            ) : (
+              <button
+                className="btn-ingresar-header"
+                id="btn-ingresar"
+                type="button"
+                onClick={handleOpenLogin}
+              >
+                Ingresar
+              </button>
+            )}
           </li>
           <li className="mobile-only-btn">
             <button
