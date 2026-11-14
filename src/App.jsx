@@ -13,6 +13,11 @@ import Contacto from './Pages/Contacto';
 
 function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [usuarioActual, setUsuarioActual] = useState(()=> {
+  const id = sessionStorage.getItem('idUsuario');
+  return id ? Number(id) : null;
+});
+
   const [recetaModal, setRecetaModal] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
 
@@ -140,7 +145,10 @@ function App() {
             path="/recetas/:id"
             element={<RecetaDetalle onAddToCart={handleAddRecipeToCart} />}
           />
-          <Route path="/pedidos" element={<Pedidos />} />
+          <Route path="/pedidos" element={<Pedidos 
+          onOpenLogin={() => setIsLoginOpen(true)}
+          usuarioId={usuarioActual}
+          />} />
           <Route path="/contacto" element={<Contacto />} />
         </Routes>
       </main>
@@ -149,6 +157,7 @@ function App() {
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
+        onLoginSuccess={(usuario) => setUsuarioActual(usuario.id)}
       />
 
       <ModalPrepararCompra
