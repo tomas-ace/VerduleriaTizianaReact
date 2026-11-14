@@ -247,3 +247,13 @@
         padding-top: 25px;
     }
 }
+.productos-page .etiqueta-oferta {
+    background-color: #e53935;
+  }
+  
+  .productos-page .precio-anterior {
+    color: #888;
+    font-size: 13px;
+    text-decoration: line-through;
+    margin-bottom: 3px;
+  }
