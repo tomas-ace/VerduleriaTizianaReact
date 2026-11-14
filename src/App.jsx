@@ -10,6 +10,7 @@ import Recetas from './Pages/Recetas';
 import RecetaDetalle from './Pages/RecetaDetalle';
 import Pedidos from './Pages/Pedidos';
 import Contacto from './Pages/Contacto';
+import Perfil from './Pages/Perfil';
 
 function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -118,12 +119,17 @@ function App() {
       setToastMsg('');
     }, 3500);
   };
+  const handleLogout = () => {
+    sessionStorage.removeItem('idUsuario');
+    setUsuarioActual(null);
+  };
 
   return (
     <BrowserRouter>
       <Header
         onOpenLogin={() => setIsLoginOpen(true)}
         cartCount={cartItems.length}
+        usuarioId={usuarioActual}
       />
       <main>
         <Routes>
@@ -150,6 +156,8 @@ function App() {
           usuarioId={usuarioActual}
           />} />
           <Route path="/contacto" element={<Contacto />} />
+          <Route path="/perfil" element={<Perfil usuarioId={usuarioActual} onLogout={handleLogout} />}
+/>
         </Routes>
       </main>
       <Footer />
