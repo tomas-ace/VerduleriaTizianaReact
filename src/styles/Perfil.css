@@ -1,0 +1,205 @@
+
+.perfil-container {
+    width: 720px;
+    max-width: 92%;
+    margin: 0 auto;
+    padding: 35px 0 100px;
+  }
+  
+.perfil-container h1 {
+font-size: 29px;
+margin-bottom: 32px;
+font-weight: 700;
+color: #17201a;
+}
+
+.perfil-card {
+width: 100%;
+background-color: white;
+border: 1px solid #e4e4e4;
+border-radius: 16px;
+padding: 24px;
+box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+}
+
+.perfil-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
+
+.perfil-usuario {
+display: flex;
+align-items: center;
+gap: 15px;
+}
+
+.avatar {
+width: 64px;
+height: 64px;
+border-radius: 50%;
+background-color: #e3f0e5;
+color: #258132;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 24px;
+font-weight: bold;
+}
+
+.usuario-info h2 {
+font-size: 20px;
+margin-bottom: 4px;
+}
+
+.usuario-info p {
+font-size: 14px;
+color: #7b8490;
+}
+
+.btn-editar,
+.cambiar-pass,
+.btn-logout {
+  border-radius: 17px;
+  padding: 10px 17px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  
+}
+
+.btn-editar,
+.cambiar-pass {
+  background-color: white;
+  border: 1px solid #ddd;
+  color: #17201a;
+}
+
+.btn-editar:hover,
+.cambiar-pass:hover {
+  background-color: #f3f5f6;
+}
+
+.btn-logout {
+  background-color: #fde8e8;
+  color: #b91c1c;
+  border: 1px solid #f8b4b4;
+}
+
+.btn-logout:hover {
+  background-color: #fbd5d5;
+}
+
+.datos-perfil {
+display: grid;
+grid-template-columns: 1fr 1fr;
+column-gap: 16px;
+row-gap: 17px;
+margin-top: 25px;
+}
+
+.dato {
+display: flex;
+flex-direction: column;
+gap: 7px;
+}
+
+.dato-titulo {
+font-size: 11px;
+color: #596574;
+font-weight: 500;
+}
+
+.dato-valor {
+min-height: 40px;
+background-color: #f3f5f6;
+border-radius: 12px;
+padding: 0 13px;
+display: flex;
+align-items: center;
+font-size: 13px;
+color: #35404b;
+}
+
+.form-perfil {
+    margin-top: 26px;
+    padding-top: 22px;
+    border-top: 1px solid #e4e4e4;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .form-perfil h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #17201a;
+    margin-bottom: 6px;
+  }
+  
+  .form-perfil label {
+    font-size: 11px;
+    color: #596574;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  
+  .form-perfil input {
+    height: 42px;
+    background-color: #f3f5f6;
+    border: 1px solid #dcdfe3;
+    border-radius: 12px;
+    padding: 0 13px;
+    font-size: 13px;
+    color: #17201a;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s;
+  }
+  
+  .form-perfil input:focus {
+    background-color: #ffffff;
+    border-color: #258132;
+  }
+  
+  .btn-guardar {
+    margin-top: 12px;
+    align-self: flex-end;
+    background-color: #258132;
+    color: white;
+    border: none;
+    border-radius: 17px;
+    padding: 11px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-guardar:hover {
+    background-color: #1b6325;
+  }
+  
+
+  @media (max-width: 600px) {
+    .datos-perfil {
+      grid-template-columns: 1fr;
+    }
+  
+    .perfil-header {
+      align-items: flex-start;
+      gap: 12px;
+      flex-direction: column;
+    }
+  
+    .btn-editar,
+    .cambiar-pass,
+    .btn-logout {
+      width: 100%;
+      text-align: center;
+    }
+  
+    .btn-guardar {
+      width: 100%;
+    }
+  }

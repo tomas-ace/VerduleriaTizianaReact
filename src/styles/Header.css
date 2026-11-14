@@ -110,6 +110,11 @@ nav ul {
 }
 
 .btn-ingresar-header {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  text-decoration: none;
   background-color: #2e7d32;
   color: white;
   border: none;

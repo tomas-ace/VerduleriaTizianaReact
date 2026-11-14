@@ -3,13 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import logo from '../../assets/img/logo.png';
 import '../../styles/Header.css';
 
-function Header({
-  onOpenLogin,
-  onOpenCart,
-  cartCount = 0,
-  usuario = null,
-  onLogout,
-}) {
+function Header({ onOpenLogin, cartCount = 0,usuarioId  }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -151,17 +145,14 @@ function Header({
             </NavLink>
           </li>
           <li className="mobile-only-btn">
-            {usuario ? (
-              <div className="user-session-mobile">
-                <span className="user-greeting">Hola, {nombreCapitalizado}</span>
-                <button
-                  className="btn-logout-header"
-                  type="button"
-                  onClick={handleLogout}
-                >
-                  Cerrar sesión
-                </button>
-              </div>
+            {usuarioId ? (
+              <Link
+                className="btn-ingresar-header mobile-btn"
+                to="/perfil"
+                onClick={closeMenu}
+              >
+                Mi perfil
+              </Link>
             ) : (
               <button
                 className="btn-ingresar-header mobile-btn"
@@ -212,18 +203,10 @@ function Header({
             </button>
           </li>
           <li className="desktop-only-btn">
-            {usuario ? (
-              <div className="user-session-desktop">
-                <span className="user-greeting">{nombreCapitalizado}</span>
-                <button
-                  className="btn-logout-header"
-                  type="button"
-                  onClick={handleLogout}
-                  title="Cerrar sesión"
-                >
-                  Salir
-                </button>
-              </div>
+            {usuarioId ? (
+              <Link className="btn-ingresar-header" to="/perfil">
+                Mi perfil
+              </Link>
             ) : (
               <button
                 className="btn-ingresar-header"

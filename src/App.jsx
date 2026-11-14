@@ -11,15 +11,7 @@ import Recetas from './Pages/Recetas';
 import RecetaDetalle from './Pages/RecetaDetalle';
 import Pedidos from './Pages/Pedidos';
 import Contacto from './Pages/Contacto';
-import {
-  buildCartItem,
-  convertCartItemUnit,
-  fallbackData,
-  fetchWithFallback,
-  mergeIntoCart,
-  normalizeCartUnit,
-  updateCartItemQuantity,
-} from './data/mockData';
+import Perfil from './Pages/Perfil';
 
 function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -269,8 +261,7 @@ function App() {
         onOpenLogin={() => setIsLoginOpen(true)}
         onOpenCart={() => setIsCartOpen(true)}
         cartCount={cartItems.length}
-        usuario={usuarioActivo}
-        onLogout={handleLogout}
+        usuarioId={usuarioActual}
       />
       <main>
         <Routes>
@@ -307,6 +298,8 @@ function App() {
             }
           />
           <Route path="/contacto" element={<Contacto />} />
+          <Route path="/perfil" element={<Perfil usuarioId={usuarioActual} onLogout={handleLogout} />}
+/>
         </Routes>
       </main>
       <Footer />

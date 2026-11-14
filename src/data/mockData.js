@@ -578,6 +578,7 @@ export const fallbackData = {
       nombreUsuario: 'juanperez',
       telefono: '1123456789',
       contrasena: '1234',
+      direccion: 'Av. Libertador 2021',
     },
     {
       id: 2,
@@ -587,6 +588,7 @@ export const fallbackData = {
       nombreUsuario: 'mariag',
       telefono: '1198765432',
       contrasena: '1234',
+      direccion: 'Av. San Martin 1254',
     },
     {
       id: 3,
@@ -596,6 +598,7 @@ export const fallbackData = {
       nombreUsuario: 'carlopez',
       telefono: '1145678901',
       contrasena: '1234',
+      direccion: 'Brasil 1563',
     },
   ],
   pedidos: [
@@ -1567,4 +1570,34 @@ export function getRecipeOfferInfo(
     badgeText,
     detailText,
   };
+}
+
+export async function patchWithFallback(endpoint, fallbackKey, id, datosActualizados) {
+  try {
+    const response = await fetch(`${API_URL}${endpoint}/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(datosActualizados),
+    });
+
+    if (!response.ok) throw new Error('API no disponible');
+    return await response.json();
+  } catch {
+   
+    const lista = fallbackData[fallbackKey];
+    const index = lista.findIndex((item) => Number(item.id) === Number(id));
+
+    if (index === -1) {
+      throw new Error('Usuario no encontrado en mockData');
+    }
+
+    lista[index] = {
+      ...lista[index],
+      ...datosActualizados,
+    };
+
+    return lista[index];
+  }
 }
