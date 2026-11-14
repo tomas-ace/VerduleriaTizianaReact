@@ -659,53 +659,767 @@ export const fallbackData = {
   ],
 };
 
+const LOCAL_KEYS = {
+  usuarios: 'usuarios_extra_tiziana',
+  pedidos: 'pedidos_extra_tiziana',
+  pedidoDetalle: 'pedido_detalle_extra_tiziana',
+};
+
+function readLocalArray(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalArray(key, arr) {
+  try {
+    localStorage.setItem(key, JSON.stringify(arr));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function mergeWithLocalExtras(fallbackKey, baseList) {
+  const safeBase = Array.isArray(baseList) ? baseList : [];
+
+  if (fallbackKey === 'usuarios') {
+    const extras = readLocalArray(LOCAL_KEYS.usuarios);
+    const seenIds = new Set(safeBase.map((u) => Number(u.id)));
+    const seenMails = new Set(
+      safeBase.map((u) => String(u.mail || '').toLowerCase())
+    );
+    const uniqueExtras = extras.filter(
+      (u) =>
+        !seenIds.has(Number(u.id)) &&
+        !seenMails.has(String(u.mail || '').toLowerCase())
+    );
+    return [...safeBase, ...uniqueExtras];
+  }
+
+  if (fallbackKey === 'pedidos') {
+    const extras = readLocalArray(LOCAL_KEYS.pedidos);
+    const seenNros = new Set(safeBase.map((p) => Number(p.nroPedido)));
+    const uniqueExtras = extras.filter(
+      (p) => !seenNros.has(Number(p.nroPedido))
+    );
+    return [...safeBase, ...uniqueExtras];
+  }
+
+  if (fallbackKey === 'pedidoDetalle') {
+    const extras = readLocalArray(LOCAL_KEYS.pedidoDetalle);
+    const seenKeys = new Set(
+      safeBase.map(
+        (d) => `${d.idPedido}-${d.idProducto}-${d.unidad || 'kg'}-${d.cantidad}`
+      )
+    );
+    const uniqueExtras = extras.filter(
+      (d) =>
+        !seenKeys.has(
+          `${d.idPedido}-${d.idProducto}-${d.unidad || 'kg'}-${d.cantidad}`
+        )
+    );
+    return [...safeBase, ...uniqueExtras];
+  }
+
+  return safeBase;
+}
+
 export async function fetchWithFallback(endpoint, fallbackKey) {
+  let baseData;
   try {
     const response = await fetch(`${API_URL}${endpoint}`);
     if (!response.ok) throw new Error('API no disponible');
-    return await response.json();
+    baseData = await response.json();
   } catch {
-    return fallbackData[fallbackKey];
+    baseData = fallbackData[fallbackKey];
   }
+  return mergeWithLocalExtras(fallbackKey, baseData);
+}
+
+export async function registrarUsuario({
+  nombre,
+  apellido,
+  mail,
+  telefono,
+  direccion,
+  contrasena,
+}) {
+  const usuariosActuales = await fetchWithFallback('/usuarios', 'usuarios');
+  const cleanMail = String(mail || '').trim().toLowerCase();
+
+  const existe = usuariosActuales.some(
+    (u) => String(u.mail || '').toLowerCase() === cleanMail
+  );
+  if (existe) {
+    throw new Error('Ya existe una cuenta registrada con ese email.');
+  }
+
+  const maxId = usuariosActuales.reduce(
+    (max, u) => Math.max(max, Number(u.id) || 0),
+    0
+  );
+  const nuevoUsuario = {
+    id: maxId + 1,
+    nombre: String(nombre || '').trim(),
+    apellido: String(apellido || '').trim(),
+    mail: cleanMail,
+    nombreUsuario: cleanMail.split('@')[0],
+    telefono: String(telefono || '').trim(),
+    direccion: String(direccion || '').trim(),
+    contrasena: String(contrasena || ''),
+  };
+
+  try {
+    await fetch(`${API_URL}/usuarios`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(nuevoUsuario),
+    });
+  } catch {
+    // fallback local
+  }
+
+  const extras = readLocalArray(LOCAL_KEYS.usuarios);
+  writeLocalArray(LOCAL_KEYS.usuarios, [...extras, nuevoUsuario]);
+
+  return nuevoUsuario;
+}
+
+export async function crearPedidoDesdeCarrito({
+  usuarioId,
+  cartItems,
+  metodoPago,
+  tipoEntrega,
+  direccion,
+  notas,
+}) {
+  const pedidosActuales = await fetchWithFallback('/pedidos', 'pedidos');
+  const maxNro = pedidosActuales.reduce(
+    (max, p) => Math.max(max, Number(p.nroPedido) || 1000),
+    1000
+  );
+  const nroPedido = maxNro + 1;
+
+  const total = cartItems.reduce((acc, item) => acc + (Number(item.price) || 0), 0);
+  const ahorroTotal = cartItems.reduce(
+    (acc, item) => acc + (Number(item.savedAmount) || 0),
+    0
+  );
+
+  const nuevoPedido = {
+    nroPedido,
+    estado: 'Preparando',
+    idUsuario: Number(usuarioId),
+    fecha: new Date().toISOString(),
+    metodoPago: metodoPago || 'Mercado Pago',
+    tipoEntrega:
+      tipoEntrega === 'retiro' ? 'Retiro en local' : 'Envío a domicilio',
+    direccion:
+      tipoEntrega === 'retiro'
+        ? 'Retiro en local — Av. Perez Galdos 8360'
+        : String(direccion || '').trim(),
+    notas: String(notas || '').trim(),
+    total,
+    ahorroTotal,
+  };
+
+  const nuevosDetalles = cartItems.map((item) => {
+    const qty = Number(item.cantidadEscalada) || 1;
+    const lineTotal = Number(item.price) || 0;
+    return {
+      idPedido: nroPedido,
+      idProducto: Number(item.idProducto),
+      nombre: item.nombre,
+      imagen: item.imagen,
+      cantidad: qty,
+      unidad: item.unidad || 'kg',
+      displayQty:
+        item.displayQty || formatCartDisplayQty(qty, item.unidad || 'kg'),
+      precio: qty > 0 ? Number((lineTotal / qty).toFixed(4)) : lineTotal,
+      subtotal: lineTotal,
+    };
+  });
+
+  try {
+    await fetch(`${API_URL}/pedidos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(nuevoPedido),
+    });
+    await Promise.all(
+      nuevosDetalles.map((det) =>
+        fetch(`${API_URL}/pedidoDetalle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(det),
+        })
+      )
+    );
+  } catch {
+    // fallback local
+  }
+
+  const pedidosExtra = readLocalArray(LOCAL_KEYS.pedidos);
+  writeLocalArray(LOCAL_KEYS.pedidos, [nuevoPedido, ...pedidosExtra]);
+
+  const detallesExtra = readLocalArray(LOCAL_KEYS.pedidoDetalle);
+  writeLocalArray(LOCAL_KEYS.pedidoDetalle, [
+    ...nuevosDetalles,
+    ...detallesExtra,
+  ]);
+
+  return { pedido: nuevoPedido, detalles: nuevosDetalles };
+}
+
+export const PRODUCT_UNIT_CONFIG = {
+  1: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 180 }, // Tomate Perita
+  2: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 200 }, // Papa Negra
+  3: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 160 }, // Cebolla
+  4: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 140 }, // Zanahoria
+  5: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 180 }, // Manzana Roja
+  6: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 160 }, // Banana
+  7: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 120 }, // Limón
+  8: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 220 }, // Morrón Rojo
+  9: { unidadesDisponibles: ['unidad', 'gramos'], unidadDefault: 'unidad', pesoUnidadGramos: 70 }, // Ajo (cabeza ~70g)
+  10: { unidadesDisponibles: ['planta', 'kg', 'gramos'], unidadDefault: 'planta', pesoUnidadGramos: 400 }, // Lechuga Capuchina
+  11: { unidadesDisponibles: ['unidad', 'kg', 'gramos'], unidadDefault: 'unidad', pesoUnidadGramos: 220 }, // Palta Hass
+  12: { unidadesDisponibles: ['kg', 'gramos'], unidadDefault: 'kg' }, // Frutilla
+  13: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 180 }, // Naranja Jugo
+  14: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 900 }, // Zapallo Anco
+  15: { unidadesDisponibles: ['kg', 'gramos'], unidadDefault: 'kg' }, // Uva Negra
+  16: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 250 }, // Berenjena
+  17: { unidadesDisponibles: ['gramos', 'kg'], unidadDefault: 'gramos' }, // Jengibre
+  18: { unidadesDisponibles: ['atado'], unidadDefault: 'atado', esPrecioDirectoUnidad: true }, // Albahaca
+  19: { unidadesDisponibles: ['atado'], unidadDefault: 'atado', esPrecioDirectoUnidad: true }, // Cilantro
+  20: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 250 }, // Calabacín
+  21: { unidadesDisponibles: ['atado'], unidadDefault: 'atado', esPrecioDirectoUnidad: true }, // Espinaca
+  22: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 250 }, // Pepino
+  23: { unidadesDisponibles: ['planta'], unidadDefault: 'planta', esPrecioDirectoUnidad: true }, // Apio
+  24: { unidadesDisponibles: ['kg', 'gramos', 'unidad'], unidadDefault: 'kg', pesoUnidadGramos: 100 }, // Kiwi
+  25: { unidadesDisponibles: ['unidad'], unidadDefault: 'unidad', esPrecioDirectoUnidad: true }, // Ananá entero
+  26: { unidadesDisponibles: ['atado'], unidadDefault: 'atado', esPrecioDirectoUnidad: true }, // Menta
+  27: { unidadesDisponibles: ['unidad', 'kg', 'gramos'], unidadDefault: 'unidad', pesoUnidadGramos: 280 }, // Granada
+};
+
+export function getProductUnitMeta(productOrId) {
+  const id =
+    typeof productOrId === 'object' && productOrId !== null
+      ? Number(productOrId.id ?? productOrId.idProducto)
+      : Number(productOrId);
+
+  const configured = PRODUCT_UNIT_CONFIG[id];
+  if (configured) {
+    return {
+      unidadesDisponibles: configured.unidadesDisponibles,
+      unidadDefault: configured.unidadDefault,
+      pesoUnidadGramos: configured.pesoUnidadGramos || null,
+      esPrecioDirectoUnidad: Boolean(configured.esPrecioDirectoUnidad),
+    };
+  }
+
+  return {
+    unidadesDisponibles: ['kg', 'gramos', 'unidad'],
+    unidadDefault: 'kg',
+    pesoUnidadGramos: 180,
+    esPrecioDirectoUnidad: false,
+  };
+}
+
+export function getUnitShortLabel(unidad = 'kg') {
+  const norm = normalizeCartUnit(unidad);
+  if (norm === 'kg') return 'kg';
+  if (norm === 'gramos') return 'g';
+  if (norm === 'unidad') return 'unid.';
+  if (norm === 'atado') return 'atado';
+  if (norm === 'planta') return 'planta';
+  if (norm === 'dientes') return 'dientes';
+  if (norm === 'ml') return 'ml';
+  return norm;
+}
+
+export function getDefaultQtyForUnit(unidad = 'kg', idProducto = null) {
+  const norm = normalizeCartUnit(unidad);
+  if (norm === 'kg') return 0.5;
+  if (norm === 'gramos') {
+    return Number(idProducto) === 17 || Number(idProducto) === 9 ? 100 : 250;
+  }
+  if (norm === 'ml') return 50;
+  return 1;
+}
+
+export function getDisplayPriceForUnit(product, unidad, discountPct = 0) {
+  const meta = getProductUnitMeta(product);
+  const normUnit = normalizeCartUnit(unidad || meta.unidadDefault);
+  const precioBase = Number(product?.precioPorPeso) || 0;
+  const factor = 1 - (Number(discountPct) || 0) / 100;
+
+  if (meta.esPrecioDirectoUnidad) {
+    const suffixMap = {
+      atado: '/atado',
+      planta: '/planta',
+      unidad: '/unid.',
+    };
+    return {
+      original: Math.round(precioBase),
+      actual: Math.round(precioBase * factor),
+      unitSuffix: suffixMap[normUnit] || `/${normUnit}`,
+      weightHint: null,
+    };
+  }
+
+  if (normUnit === 'gramos') {
+    const raw100g = precioBase * 0.1;
+    return {
+      original: Math.round(raw100g),
+      actual: Math.round(raw100g * factor),
+      unitSuffix: '/100g',
+      weightHint: null,
+    };
+  }
+
+  if (normUnit === 'unidad' || normUnit === 'planta') {
+    const grams = meta.pesoUnidadGramos || 180;
+    const rawPerUnit = (grams / 1000) * precioBase;
+    return {
+      original: Math.round(rawPerUnit),
+      actual: Math.round(rawPerUnit * factor),
+      unitSuffix: normUnit === 'planta' ? '/planta' : '/unid.',
+      weightHint: `~${grams}g c/u`,
+    };
+  }
+
+  return {
+    original: Math.round(precioBase),
+    actual: Math.round(precioBase * factor),
+    unitSuffix: '/kg',
+    weightHint: null,
+  };
+}
+
+export function normalizeCartUnit(unidad = 'kg') {
+  const u = String(unidad || 'kg').trim().toLowerCase();
+  if (u === 'unidades' || u === 'unidad' || u === 'unid.' || u === 'u') return 'unidad';
+  if (u === 'atados' || u === 'atado') return 'atado';
+  if (u === 'plantas' || u === 'planta') return 'planta';
+  if (u === 'diente' || u === 'dientes') return 'dientes';
+  if (u === 'kilo' || u === 'kilos' || u === 'kg') return 'kg';
+  if (u === 'g' || u === 'gr' || u === 'gramo' || u === 'gramos') return 'gramos';
+  return u;
+}
+
+export function formatCartDisplayQty(qty, unidad = 'kg') {
+  const normUnit = normalizeCartUnit(unidad);
+  const rounded = Number.isInteger(qty) ? qty : Number(Number(qty).toFixed(2));
+
+  if (normUnit === 'gramos' && rounded >= 1000) {
+    const inKg = rounded / 1000;
+    return `${Number.isInteger(inKg) ? inKg : Number(inKg.toFixed(2))} kg`;
+  }
+  if (normUnit === 'unidad') {
+    return `${rounded} ${rounded === 1 ? 'unidad' : 'unidades'}`;
+  }
+  if (normUnit === 'atado') {
+    return `${rounded} ${rounded === 1 ? 'atado' : 'atados'}`;
+  }
+  if (normUnit === 'planta') {
+    return `${rounded} ${rounded === 1 ? 'planta' : 'plantas'}`;
+  }
+  if (normUnit === 'dientes') {
+    return `${rounded} ${rounded === 1 ? 'diente' : 'dientes'}`;
+  }
+  return `${rounded} ${normUnit}`;
+}
+
+export function getApproxWeightLabel(qty, unidad, idProducto) {
+  const meta = getProductUnitMeta(idProducto);
+  if (meta.esPrecioDirectoUnidad) return null;
+  const normUnit = normalizeCartUnit(unidad);
+
+  let grams = null;
+  if ((normUnit === 'unidad' || normUnit === 'planta') && meta.pesoUnidadGramos) {
+    grams = qty * meta.pesoUnidadGramos;
+  } else if (normUnit === 'dientes') {
+    grams = qty * 7;
+  }
+
+  if (!grams || grams <= 0) return null;
+  if (grams >= 1000) {
+    const kg = Number((grams / 1000).toFixed(2));
+    return `≈ ${kg} kg`;
+  }
+  return `≈ ${Math.round(grams)} g`;
+}
+
+export function getCartStepForUnit(unidad = 'kg', currentQty = 1) {
+  const norm = normalizeCartUnit(unidad);
+  if (norm === 'kg') return 0.5;
+  if (norm === 'gramos') return currentQty <= 100 ? 50 : 100;
+  if (norm === 'ml') return 10;
+  return 1;
+}
+
+function quantityToGrams(qty, unidad, meta) {
+  if (meta?.esPrecioDirectoUnidad) return null;
+  const norm = normalizeCartUnit(unidad);
+  const clean = Number(qty) || 0;
+  if (norm === 'kg') return clean * 1000;
+  if (norm === 'gramos') return clean;
+  if ((norm === 'unidad' || norm === 'planta') && meta?.pesoUnidadGramos) {
+    return clean * meta.pesoUnidadGramos;
+  }
+  if (norm === 'dientes') return clean * 7;
+  if (norm === 'ml') return clean * 2;
+  return null;
+}
+
+function gramsToQuantity(grams, targetUnit, meta) {
+  const norm = normalizeCartUnit(targetUnit);
+  if (norm === 'kg') {
+    return Math.max(0.1, Number((grams / 1000).toFixed(2)));
+  }
+  if (norm === 'gramos') {
+    return Math.max(20, Math.round(grams / 10) * 10);
+  }
+  if (norm === 'unidad' || norm === 'planta') {
+    const perUnit = meta?.pesoUnidadGramos || 180;
+    return Math.max(1, Math.round(grams / perUnit));
+  }
+  if (norm === 'dientes') {
+    return Math.max(1, Math.round(grams / 7));
+  }
+  if (norm === 'ml') {
+    return Math.max(10, Math.round(grams / 2));
+  }
+  return Math.max(1, Math.round(grams));
+}
+
+export function buildCartItem({
+  idProducto,
+  nombre,
+  imagen,
+  categoria,
+  cantidad,
+  unidad = 'kg',
+  precioPorPeso,
+  discountPct,
+  productos = fallbackData.productos,
+  ofertas = fallbackData.Oferta,
+}) {
+  const prod =
+    (productos || []).find((p) => Number(p.id) === Number(idProducto)) ||
+    fallbackData.productos.find((p) => Number(p.id) === Number(idProducto));
+  const meta = getProductUnitMeta(idProducto);
+
+  let normUnit = normalizeCartUnit(unidad);
+  let cleanQty = Number(Number(cantidad).toFixed(2));
+
+  if (
+    normUnit === 'unidad' ||
+    normUnit === 'atado' ||
+    normUnit === 'planta' ||
+    normUnit === 'dientes'
+  ) {
+    cleanQty = Math.max(1, Math.round(cleanQty));
+  } else if (normUnit === 'gramos' && cleanQty >= 1000) {
+    normUnit = 'kg';
+    cleanQty = Number((cleanQty / 1000).toFixed(2));
+  }
+
+  const basePrecioPeso =
+    precioPorPeso !== undefined
+      ? Number(precioPorPeso)
+      : Number(prod?.precioPorPeso || 0);
+
+  const offerMap = buildActiveOfferMap(ofertas);
+  const resolvedDiscount =
+    discountPct !== undefined
+      ? Number(discountPct)
+      : offerMap[Number(idProducto)] || 0;
+
+  const rawOriginal = calculateIngredientPrice(
+    cleanQty,
+    normUnit,
+    basePrecioPeso,
+    1,
+    idProducto
+  );
+  const originalPrice = Math.round(rawOriginal);
+  const hasOffer = resolvedDiscount > 0;
+  const price = hasOffer
+    ? Math.round(rawOriginal * (1 - resolvedDiscount / 100))
+    : originalPrice;
+
+  const unidadesParaItem = meta.unidadesDisponibles.includes(normUnit)
+    ? meta.unidadesDisponibles
+    : [normUnit, ...meta.unidadesDisponibles];
+
+  return {
+    cartKey: `${idProducto}-${normUnit}`,
+    idProducto: Number(idProducto),
+    nombre: nombre || prod?.nombre || 'Producto',
+    categoria: categoria || prod?.categoria || '',
+    imagen:
+      imagen || prod?.imagen || '/assets/productos-img/generico-verduras.png',
+    cantidadEscalada: cleanQty,
+    unidad: normUnit,
+    displayQty: formatCartDisplayQty(cleanQty, normUnit),
+    approxWeightLabel: getApproxWeightLabel(cleanQty, normUnit, idProducto),
+    unidadesDisponibles: unidadesParaItem,
+    precioPorPeso: basePrecioPeso,
+    discountPct: resolvedDiscount,
+    hasOffer,
+    originalPrice,
+    price,
+    savedAmount: Math.max(0, originalPrice - price),
+  };
+}
+
+export function mergeIntoCart(
+  prevItems = [],
+  incomingRaw,
+  productos = fallbackData.productos,
+  ofertas = fallbackData.Oferta
+) {
+  const incoming = buildCartItem({
+    idProducto: incomingRaw.idProducto,
+    nombre: incomingRaw.nombre,
+    imagen: incomingRaw.imagen,
+    categoria: incomingRaw.categoria,
+    cantidad: incomingRaw.cantidadEscalada ?? incomingRaw.cantidad ?? 1,
+    unidad: incomingRaw.unidad || 'kg',
+    precioPorPeso: incomingRaw.precioPorPeso,
+    discountPct: incomingRaw.discountPct,
+    productos,
+    ofertas,
+  });
+
+  if (!incoming.cantidadEscalada || incoming.cantidadEscalada <= 0) {
+    return prevItems;
+  }
+
+  const meta = getProductUnitMeta(incoming.idProducto);
+  const incomingGrams = quantityToGrams(
+    incoming.cantidadEscalada,
+    incoming.unidad,
+    meta
+  );
+
+  const updated = [...prevItems];
+
+  const existingIndex = updated.findIndex((c) => {
+    if (Number(c.idProducto) !== Number(incoming.idProducto)) return false;
+    const existingNorm = normalizeCartUnit(c.unidad);
+    if (existingNorm === incoming.unidad) return true;
+    const existingGrams = quantityToGrams(
+      c.cantidadEscalada,
+      existingNorm,
+      meta
+    );
+    return incomingGrams !== null && existingGrams !== null;
+  });
+
+  if (existingIndex >= 0) {
+    const existing = updated[existingIndex];
+    const existingNorm = normalizeCartUnit(existing.unidad);
+
+    let targetUnit = existingNorm;
+    let combinedQty =
+      Number(existing.cantidadEscalada) + incoming.cantidadEscalada;
+
+    if (existingNorm === incoming.unidad) {
+      if (targetUnit === 'gramos' && combinedQty >= 1000) {
+        targetUnit = 'kg';
+        combinedQty = Number((combinedQty / 1000).toFixed(2));
+      } else {
+        combinedQty = Number(combinedQty.toFixed(2));
+      }
+    } else {
+      const existingGrams =
+        quantityToGrams(existing.cantidadEscalada, existingNorm, meta) || 0;
+      const totalGrams = existingGrams + (incomingGrams || 0);
+
+      if (incoming.unidad === 'unidad' || incoming.unidad === 'planta') {
+        targetUnit = incoming.unidad;
+        combinedQty = gramsToQuantity(totalGrams, targetUnit, meta);
+      } else if (totalGrams >= 1000 || incoming.unidad === 'kg' || existingNorm === 'kg') {
+        targetUnit = 'kg';
+        combinedQty = Number((totalGrams / 1000).toFixed(2));
+      } else {
+        targetUnit = 'gramos';
+        combinedQty = Math.round(totalGrams);
+      }
+    }
+
+    updated[existingIndex] = buildCartItem({
+      idProducto: existing.idProducto,
+      nombre: existing.nombre || incoming.nombre,
+      imagen: existing.imagen || incoming.imagen,
+      categoria: existing.categoria || incoming.categoria,
+      cantidad: combinedQty,
+      unidad: targetUnit,
+      precioPorPeso: existing.precioPorPeso ?? incoming.precioPorPeso,
+      discountPct: Math.max(
+        Number(existing.discountPct || 0),
+        Number(incoming.discountPct || 0)
+      ),
+      productos,
+      ofertas,
+    });
+  } else {
+    updated.push(incoming);
+  }
+
+  return updated;
+}
+
+export function updateCartItemQuantity(
+  prevItems = [],
+  idProducto,
+  unidad,
+  newQty,
+  productos = fallbackData.productos,
+  ofertas = fallbackData.Oferta
+) {
+  const normTarget = normalizeCartUnit(unidad);
+  const cleanQty = Number(Number(newQty).toFixed(2));
+
+  if (!cleanQty || cleanQty <= 0) {
+    return prevItems.filter(
+      (item) =>
+        !(
+          Number(item.idProducto) === Number(idProducto) &&
+          normalizeCartUnit(item.unidad) === normTarget
+        )
+    );
+  }
+
+  return prevItems.map((item) => {
+    if (
+      Number(item.idProducto) === Number(idProducto) &&
+      normalizeCartUnit(item.unidad) === normTarget
+    ) {
+      let targetUnit = normTarget;
+      let targetQty = cleanQty;
+      if (targetUnit === 'gramos' && targetQty >= 1000) {
+        targetUnit = 'kg';
+        targetQty = Number((targetQty / 1000).toFixed(2));
+      }
+      return buildCartItem({
+        idProducto: item.idProducto,
+        nombre: item.nombre,
+        imagen: item.imagen,
+        categoria: item.categoria,
+        cantidad: targetQty,
+        unidad: targetUnit,
+        precioPorPeso: item.precioPorPeso,
+        discountPct: item.discountPct,
+        productos,
+        ofertas,
+      });
+    }
+    return item;
+  });
+}
+
+export function convertCartItemUnit(
+  prevItems = [],
+  idProducto,
+  fromUnidad,
+  toUnidad,
+  productos = fallbackData.productos,
+  ofertas = fallbackData.Oferta
+) {
+  const normFrom = normalizeCartUnit(fromUnidad);
+  const normTo = normalizeCartUnit(toUnidad);
+  if (normFrom === normTo) return prevItems;
+
+  const meta = getProductUnitMeta(idProducto);
+  const targetIdx = prevItems.findIndex(
+    (item) =>
+      Number(item.idProducto) === Number(idProducto) &&
+      normalizeCartUnit(item.unidad) === normFrom
+  );
+  if (targetIdx < 0) return prevItems;
+
+  const currentItem = prevItems[targetIdx];
+  const grams = quantityToGrams(currentItem.cantidadEscalada, normFrom, meta);
+  const convertedQty =
+    grams !== null
+      ? gramsToQuantity(grams, normTo, meta)
+      : getDefaultQtyForUnit(normTo, idProducto);
+
+  const withoutCurrent = prevItems.filter((_, idx) => idx !== targetIdx);
+  return mergeIntoCart(
+    withoutCurrent,
+    {
+      ...currentItem,
+      cantidadEscalada: convertedQty,
+      unidad: normTo,
+    },
+    productos,
+    ofertas
+  );
 }
 
 export function formatScaledIngredient(baseQty, unidad, scaleFactor) {
   const scaled = baseQty * scaleFactor;
-  const unitLower = unidad.toLowerCase();
+  const normUnit = normalizeCartUnit(unidad);
 
-  if (unitLower === 'gramos' && scaled >= 1000) {
-    const inKg = scaled / 1000;
-    return `${Number.isInteger(inKg) ? inKg : Number(inKg.toFixed(2))} kg`;
+  if (
+    normUnit === 'unidad' ||
+    normUnit === 'atado' ||
+    normUnit === 'planta' ||
+    normUnit === 'dientes'
+  ) {
+    const whole = Math.max(1, Math.round(scaled));
+    return formatCartDisplayQty(whole, normUnit);
   }
 
-  const rounded = Number.isInteger(scaled)
-    ? scaled
-    : Number(scaled.toFixed(2));
-  return `${rounded} ${unidad}`;
+  return formatCartDisplayQty(scaled, normUnit);
 }
 
 export function calculateIngredientPrice(
   baseQty,
   unidad,
   precioPorPeso,
-  scaleFactor
+  scaleFactor = 1,
+  idProducto = null
 ) {
-  const scaledQty = baseQty * scaleFactor;
-  const unitLower = unidad.toLowerCase();
+  const meta = idProducto ? getProductUnitMeta(idProducto) : null;
+  const scaledRaw = baseQty * scaleFactor;
+  const normUnit = normalizeCartUnit(unidad);
 
-  if (unitLower === 'gramos') {
-    return (scaledQty / 1000) * precioPorPeso;
+  if (meta?.esPrecioDirectoUnidad) {
+    const whole =
+      normUnit === 'unidad' || normUnit === 'atado' || normUnit === 'planta'
+        ? Math.max(1, Math.round(scaledRaw))
+        : scaledRaw;
+    return whole * precioPorPeso;
   }
-  if (unitLower === 'kg') {
-    return scaledQty * precioPorPeso;
+
+  if (normUnit === 'gramos') {
+    return (scaledRaw / 1000) * precioPorPeso;
   }
-  if (unitLower === 'dientes') {
-    return (scaledQty / 10) * precioPorPeso;
+  if (normUnit === 'kg') {
+    return scaledRaw * precioPorPeso;
   }
-  if (unitLower === 'ml') {
-    return (scaledQty / 1000) * precioPorPeso;
+  if (normUnit === 'unidad' || normUnit === 'planta') {
+    const whole = Math.max(1, Math.round(scaledRaw));
+    const gramsPerUnit = meta?.pesoUnidadGramos || 180;
+    return ((whole * gramsPerUnit) / 1000) * precioPorPeso;
   }
-  return scaledQty * precioPorPeso;
+  if (normUnit === 'dientes') {
+    const whole = Math.max(1, Math.round(scaledRaw));
+    return ((whole * 7) / 1000) * precioPorPeso;
+  }
+  if (normUnit === 'ml') {
+    return ((scaledRaw * 2) / 1000) * precioPorPeso;
+  }
+  return scaledRaw * precioPorPeso;
 }
 
 export function buildActiveOfferMap(ofertas = []) {
@@ -735,11 +1449,22 @@ export function getRecipeIngredientsWithOffers(
       );
       if (!prod) return null;
 
+      const normUnit = normalizeCartUnit(ing.unidad);
+      const isWholeUnit =
+        normUnit === 'unidad' ||
+        normUnit === 'atado' ||
+        normUnit === 'planta' ||
+        normUnit === 'dientes';
+      const cantidadEscalada = isWholeUnit
+        ? Math.max(1, Math.round(ing.cantidad * scaleFactor))
+        : Number((ing.cantidad * scaleFactor).toFixed(2));
+
       const rawOriginal = calculateIngredientPrice(
         ing.cantidad,
         ing.unidad,
         prod.precioPorPeso,
-        scaleFactor
+        scaleFactor,
+        prod.id
       );
       const originalPrice = Math.round(rawOriginal);
       const discountPct = offerMap[Number(prod.id)] || 0;
@@ -748,20 +1473,29 @@ export function getRecipeIngredientsWithOffers(
         ? Math.round(rawOriginal * (1 - discountPct / 100))
         : originalPrice;
 
-      const displayQty = formatScaledIngredient(
+      const approxWeight = getApproxWeightLabel(
+        cantidadEscalada,
+        normUnit,
+        prod.id
+      );
+      const baseDisplayQty = formatScaledIngredient(
         ing.cantidad,
         ing.unidad,
         scaleFactor
       );
+      const displayQty = approxWeight
+        ? `${baseDisplayQty} (${approxWeight})`
+        : baseDisplayQty;
 
       return {
         idProducto: prod.id,
         nombre: prod.nombre,
         categoria: prod.categoria,
         imagen: prod.imagen,
-        cantidadEscalada: Number((ing.cantidad * scaleFactor).toFixed(2)),
-        unidad: ing.unidad,
+        cantidadEscalada,
+        unidad: normUnit,
         displayQty,
+        approxWeightLabel: approxWeight,
         originalPrice,
         price,
         discountPct,

@@ -3,7 +3,13 @@ import { Link, NavLink } from 'react-router-dom';
 import logo from '../../assets/img/logo.png';
 import '../../styles/Header.css';
 
-function Header({ onOpenLogin, cartCount = 0 }) {
+function Header({
+  onOpenLogin,
+  onOpenCart,
+  cartCount = 0,
+  usuario = null,
+  onLogout,
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -16,6 +22,17 @@ function Header({ onOpenLogin, cartCount = 0 }) {
     closeMenu();
     if (onOpenLogin) onOpenLogin();
   };
+  const handleLogout = () => {
+    closeMenu();
+    if (onLogout) onLogout();
+  };
+  const handleOpenCart = () => {
+    closeMenu();
+    if (onOpenCart) onOpenCart();
+  };
+  const nombreCapitalizado = usuario?.nombre
+    ? usuario.nombre.charAt(0).toUpperCase() + usuario.nombre.slice(1)
+    : '';
   const getNavLinkClass = ({ isActive }) =>
     isActive ? 'nav-page active' : 'nav-page';
 
@@ -134,14 +151,27 @@ function Header({ onOpenLogin, cartCount = 0 }) {
             </NavLink>
           </li>
           <li className="mobile-only-btn">
-            <button
-              className="btn-ingresar-header mobile-btn"
-              id="btn-ingresar-mobile"
-              type="button"
-              onClick={handleOpenLogin}
-            >
-              Ingresar
-            </button>
+            {usuario ? (
+              <div className="user-session-mobile">
+                <span className="user-greeting">Hola, {nombreCapitalizado}</span>
+                <button
+                  className="btn-logout-header"
+                  type="button"
+                  onClick={handleLogout}
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            ) : (
+              <button
+                className="btn-ingresar-header mobile-btn"
+                id="btn-ingresar-mobile"
+                type="button"
+                onClick={handleOpenLogin}
+              >
+                Ingresar
+              </button>
+            )}
           </li>
         </ul>
         <ul className="nav-buttons">
@@ -160,7 +190,12 @@ function Header({ onOpenLogin, cartCount = 0 }) {
             </button>
           </li>
           <li>
-            <button className="btnsup" type="button" aria-label="Carrito">
+            <button
+              className="btnsup"
+              type="button"
+              aria-label="Abrir carrito"
+              onClick={handleOpenCart}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="18"
@@ -177,14 +212,28 @@ function Header({ onOpenLogin, cartCount = 0 }) {
             </button>
           </li>
           <li className="desktop-only-btn">
-            <button
-              className="btn-ingresar-header"
-              id="btn-ingresar"
-              type="button"
-              onClick={handleOpenLogin}
-            >
-              Ingresar
-            </button>
+            {usuario ? (
+              <div className="user-session-desktop">
+                <span className="user-greeting">{nombreCapitalizado}</span>
+                <button
+                  className="btn-logout-header"
+                  type="button"
+                  onClick={handleLogout}
+                  title="Cerrar sesión"
+                >
+                  Salir
+                </button>
+              </div>
+            ) : (
+              <button
+                className="btn-ingresar-header"
+                id="btn-ingresar"
+                type="button"
+                onClick={handleOpenLogin}
+              >
+                Ingresar
+              </button>
+            )}
           </li>
           <li className="mobile-only-btn">
             <button

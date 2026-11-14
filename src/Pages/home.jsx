@@ -3,9 +3,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   fetchWithFallback,
   fallbackData,
+  getCartStepForUnit,
+  getDefaultQtyForUnit,
+  getDisplayPriceForUnit,
+  getProductUnitMeta,
   getRecipeOfferInfo,
+  getUnitShortLabel,
+  normalizeCartUnit,
 } from '../data/mockData';
 import '../styles/Home.css';
+
+const esUnidadEntera = (u) => {
+  const n = normalizeCartUnit(u);
+  return n === 'unidad' || n === 'atado' || n === 'planta' || n === 'dientes';
+};
 
 function Home({ onOpenRecipeModal, onAddProduct }) {
   const navigate = useNavigate();
@@ -22,48 +33,80 @@ function Home({ onOpenRecipeModal, onAddProduct }) {
   );
   const [recipes, setRecipes] = useState(fallbackData.recetas.slice(0, 6));
   const [dificultades, setDificultades] = useState(fallbackData.dificultad);
+  const [selectedUnits, setSelectedUnits] = useState({});
   const [quantities, setQuantities] = useState({});
 
-  const getQtyString = (key) =>
-    quantities[key] !== undefined ? String(quantities[key]) : '0.5';
-
-  const getNumericQty = (key) => {
-    const raw = quantities[key];
-    const parsed = parseFloat(String(raw ?? '0.5').replace(',', '.'));
-    return Number.isNaN(parsed) || parsed <= 0 ? 0.5 : parsed;
+  const getActiveUnit = (key, product) => {
+    if (selectedUnits[key]) return selectedUnits[key];
+    return getProductUnitMeta(product).unidadDefault;
   };
 
-  const handleStepQty = (key, delta) => {
-    const current = getNumericQty(key);
-    const next = Math.max(0.5, Number((current + delta).toFixed(2)));
+  const getQtyString = (key, product) => {
+    const unit = getActiveUnit(key, product);
+    if (quantities[key] !== undefined) return String(quantities[key]);
+    return String(getDefaultQtyForUnit(unit, product.id));
+  };
+
+  const getNumericQty = (key, product) => {
+    const unit = getActiveUnit(key, product);
+    const def = getDefaultQtyForUnit(unit, product.id);
+    const raw = quantities[key];
+    const parsed = parseFloat(String(raw ?? def).replace(',', '.'));
+    if (Number.isNaN(parsed) || parsed <= 0) return def;
+    return esUnidadEntera(unit) ? Math.max(1, Math.round(parsed)) : parsed;
+  };
+
+  const handleSelectUnit = (key, product, newUnit) => {
+    setSelectedUnits((prev) => ({ ...prev, [key]: newUnit }));
+    setQuantities((prev) => ({
+      ...prev,
+      [key]: String(getDefaultQtyForUnit(newUnit, product.id)),
+    }));
+  };
+
+  const handleStepQty = (key, product, direction) => {
+    const unit = getActiveUnit(key, product);
+    const current = getNumericQty(key, product);
+    const step = getCartStepForUnit(unit, current);
+    const minVal = unit === 'kg' ? 0.25 : unit === 'gramos' ? 50 : 1;
+    const nextRaw = current + direction * step;
+    const next = esUnidadEntera(unit)
+      ? Math.max(minVal, Math.round(nextRaw))
+      : Math.max(minVal, Number(nextRaw.toFixed(2)));
     setQuantities((prev) => ({ ...prev, [key]: String(next) }));
   };
 
-  const handleQtyKeyDown = (e) => {
-    if (['-', '+', 'e', 'E'].includes(e.key)) {
+  const handleQtyKeyDown = (e, unit) => {
+    const blocked = esUnidadEntera(unit)
+      ? ['-', '+', '.', ',', 'e', 'E']
+      : ['-', '+', 'e', 'E'];
+    if (blocked.includes(e.key)) {
       e.preventDefault();
     }
   };
 
-  const handleQtyChange = (key, value) => {
+  const handleQtyChange = (key, product, value) => {
+    const unit = getActiveUnit(key, product);
     const normalized = value.replace(',', '.');
     if (normalized === '') {
       setQuantities((prev) => ({ ...prev, [key]: '' }));
       return;
     }
-    if (!/^\d*\.?\d*$/.test(normalized)) {
+    const regex = esUnidadEntera(unit) ? /^\d*$/ : /^\d*\.?\d*$/;
+    if (!regex.test(normalized)) {
       return;
     }
+    const maxLimit = unit === 'gramos' ? 10000 : 100;
     const num = parseFloat(normalized);
-    if (!Number.isNaN(num) && num > 100) {
-      setQuantities((prev) => ({ ...prev, [key]: '100' }));
+    if (!Number.isNaN(num) && num > maxLimit) {
+      setQuantities((prev) => ({ ...prev, [key]: String(maxLimit) }));
       return;
     }
     setQuantities((prev) => ({ ...prev, [key]: normalized }));
   };
 
-  const handleQtyBlur = (key) => {
-    const num = getNumericQty(key);
+  const handleQtyBlur = (key, product) => {
+    const num = getNumericQty(key, product);
     setQuantities((prev) => ({
       ...prev,
       [key]: String(Number(num.toFixed(2))),
@@ -285,10 +328,14 @@ function Home({ onOpenRecipeModal, onAddProduct }) {
           {offers.map((offer) => {
             const product = allProducts.find((p) => p.id === offer.IdProducto);
             if (!product) return null;
-            const discountedPrice = Math.round(
-              product.precioPorPeso * (1 - offer.Porcentaje / 100)
-            );
             const qtyKey = `offer-${product.id}`;
+            const meta = getProductUnitMeta(product);
+            const activeUnit = getActiveUnit(qtyKey, product);
+            const priceInfo = getDisplayPriceForUnit(
+              product,
+              activeUnit,
+              offer.Porcentaje
+            );
 
             return (
               <article className="product-card" key={offer.IdProducto}>
@@ -310,50 +357,83 @@ function Home({ onOpenRecipeModal, onAddProduct }) {
                   <p className="product-card__description">
                     {product.descripcion}
                   </p>
+
+                  {meta.unidadesDisponibles.length > 1 && (
+                    <div
+                      className="home-unit-selector"
+                      role="group"
+                      aria-label={`Unidad para ${product.nombre}`}
+                    >
+                      {meta.unidadesDisponibles.map((u) => (
+                        <button
+                          key={u}
+                          type="button"
+                          className={`home-unit-pill ${
+                            activeUnit === u ? 'active' : ''
+                          }`}
+                          onClick={() => handleSelectUnit(qtyKey, product, u)}
+                        >
+                          {getUnitShortLabel(u)}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="product-card__footer">
                     <div className="product-card__price">
                       <span className="product-card__price--discount">
-                        ${product.precioPorPeso}
+                        ${priceInfo.original.toLocaleString('es-AR')}
                       </span>
                       <span className="product-card__price--current">
-                        ${discountedPrice}
-                        <small className="product-card__price--unit">/kg</small>
+                        ${priceInfo.actual.toLocaleString('es-AR')}
+                        <small className="product-card__price--unit">
+                          {priceInfo.unitSuffix}
+                        </small>
                       </span>
+                      {priceInfo.weightHint && (
+                        <span className="home-unit-weight-hint">
+                          {priceInfo.weightHint}
+                        </span>
+                      )}
                     </div>
 
                     <div className="product-card__actions-right">
-
-                      <div className="qty-stepper" aria-label="Cantidad en kilos">
+                      <div
+                        className="qty-stepper"
+                        aria-label={`Cantidad en ${activeUnit}`}
+                      >
                         <button
                           type="button"
                           className="qty-stepper__btn"
-                          onClick={() => handleStepQty(qtyKey, -0.5)}
-                          aria-label="Disminuir medio kilo"
+                          onClick={() => handleStepQty(qtyKey, product, -1)}
+                          aria-label="Disminuir cantidad"
                         >
                           −
                         </button>
                         <input
                           type="text"
-                          inputMode="decimal"
-                          className="qty-stepper__input"
-                          value={getQtyString(qtyKey)}
-                          onKeyDown={handleQtyKeyDown}
-                          onChange={(e) =>
-                            handleQtyChange(qtyKey, e.target.value)
+                          inputMode={
+                            esUnidadEntera(activeUnit) ? 'numeric' : 'decimal'
                           }
-                          onBlur={() => handleQtyBlur(qtyKey)}
-                          aria-label={`Kilos de ${product.nombre}`}
+                          className="qty-stepper__input"
+                          value={getQtyString(qtyKey, product)}
+                          onKeyDown={(e) => handleQtyKeyDown(e, activeUnit)}
+                          onChange={(e) =>
+                            handleQtyChange(qtyKey, product, e.target.value)
+                          }
+                          onBlur={() => handleQtyBlur(qtyKey, product)}
+                          aria-label={`Cantidad de ${product.nombre}`}
                         />
                         <button
                           type="button"
                           className="qty-stepper__btn"
-                          onClick={() => handleStepQty(qtyKey, 0.5)}
-                          aria-label="Aumentar medio kilo"
+                          onClick={() => handleStepQty(qtyKey, product, 1)}
+                          aria-label="Aumentar cantidad"
                         >
                           +
                         </button>
                       </div>
-                      
+
                       <button
                         className="product-card__button"
                         type="button"
@@ -361,8 +441,9 @@ function Home({ onOpenRecipeModal, onAddProduct }) {
                           onAddProduct &&
                           onAddProduct(
                             product,
-                            getNumericQty(qtyKey),
-                            discountedPrice
+                            getNumericQty(qtyKey, product),
+                            activeUnit,
+                            offer.Porcentaje
                           )
                         }
                       >
@@ -388,6 +469,20 @@ function Home({ onOpenRecipeModal, onAddProduct }) {
         <div className="daily-offers__grid" id="featured-products-container">
           {featuredProducts.map((product) => {
             const qtyKey = `feat-${product.id}`;
+            const activeOffer = allOffers.find(
+              (o) =>
+                Number(o.IdProducto) === Number(product.id) &&
+                o.Estado === 'Activa' &&
+                Number(o.Porcentaje) > 0
+            );
+            const discountPct = activeOffer ? Number(activeOffer.Porcentaje) : 0;
+            const meta = getProductUnitMeta(product);
+            const activeUnit = getActiveUnit(qtyKey, product);
+            const priceInfo = getDisplayPriceForUnit(
+              product,
+              activeUnit,
+              discountPct
+            );
 
             return (
               <article className="offer-card" key={product.id}>
@@ -398,45 +493,97 @@ function Home({ onOpenRecipeModal, onAddProduct }) {
                 />
                 <div className="offer-card__info">
                   <span className="offer-card__tag offer-card__tag--green">
-                    Destacado
+                    {activeOffer ? `Destacado • -${discountPct}%` : 'Destacado'}
                   </span>
                   <h3 className="offer-card__name">{product.nombre}</h3>
                   <p className="offer-card__price">
-                    <strong>${product.precioPorPeso}</strong>{' '}
-                    <span className="offer-card__price-unit">/kg</span>
+                    {activeOffer && (
+                      <del>${priceInfo.original.toLocaleString('es-AR')}</del>
+                    )}
+                    <strong>${priceInfo.actual.toLocaleString('es-AR')}</strong>{' '}
+                    <span className="offer-card__price-unit">
+                      {priceInfo.unitSuffix}
+                    </span>
+                    {priceInfo.weightHint && (
+                      <span className="home-unit-weight-hint">
+                        ({priceInfo.weightHint})
+                      </span>
+                    )}
                   </p>
-                  <div className="offer-card__actions-row">
 
-                    <div className="qty-stepper" aria-label="Cantidad en kilos">
+                  {meta.unidadesDisponibles.length > 1 && (
+                    <div
+                      className="home-unit-selector home-unit-selector--compact"
+                      role="group"
+                      aria-label={`Unidad para ${product.nombre}`}
+                    >
+                      {meta.unidadesDisponibles.map((u) => (
+                        <button
+                          key={u}
+                          type="button"
+                          className={`home-unit-pill ${
+                            activeUnit === u ? 'active' : ''
+                          }`}
+                          onClick={() => handleSelectUnit(qtyKey, product, u)}
+                        >
+                          {getUnitShortLabel(u)}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="offer-card__actions-row">
+                    <div
+                      className="qty-stepper"
+                      aria-label={`Cantidad en ${activeUnit}`}
+                    >
                       <button
                         type="button"
                         className="qty-stepper__btn"
-                        onClick={() => handleStepQty(qtyKey, -0.5)}
-                        aria-label="Disminuir medio kilo"
+                        onClick={() => handleStepQty(qtyKey, product, -1)}
+                        aria-label="Disminuir cantidad"
                       >
                         −
                       </button>
                       <input
                         type="text"
-                        inputMode="decimal"
-                        className="qty-stepper__input"
-                        value={getQtyString(qtyKey)}
-                        onKeyDown={handleQtyKeyDown}
-                        onChange={(e) =>
-                          handleQtyChange(qtyKey, e.target.value)
+                        inputMode={
+                          esUnidadEntera(activeUnit) ? 'numeric' : 'decimal'
                         }
-                        onBlur={() => handleQtyBlur(qtyKey)}
-                        aria-label={`Kilos de ${product.nombre}`}
+                        className="qty-stepper__input"
+                        value={getQtyString(qtyKey, product)}
+                        onKeyDown={(e) => handleQtyKeyDown(e, activeUnit)}
+                        onChange={(e) =>
+                          handleQtyChange(qtyKey, product, e.target.value)
+                        }
+                        onBlur={() => handleQtyBlur(qtyKey, product)}
+                        aria-label={`Cantidad de ${product.nombre}`}
                       />
                       <button
                         type="button"
                         className="qty-stepper__btn"
-                        onClick={() => handleStepQty(qtyKey, 0.5)}
-                        aria-label="Aumentar medio kilo"
+                        onClick={() => handleStepQty(qtyKey, product, 1)}
+                        aria-label="Aumentar cantidad"
                       >
                         +
                       </button>
                     </div>
+
+                    <button
+                      className="product-card__button"
+                      type="button"
+                      onClick={() =>
+                        onAddProduct &&
+                        onAddProduct(
+                          product,
+                          getNumericQty(qtyKey, product),
+                          activeUnit,
+                          discountPct
+                        )
+                      }
+                    >
+                      + Agregar
+                    </button>
                   </div>
                 </div>
               </article>
