@@ -131,6 +131,49 @@ nav ul {
   background-color: #1b5e20;
 }
 
+.user-session-desktop {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+  padding: 0.25rem 0.35rem 0.25rem 0.75rem;
+}
+
+.user-session-mobile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.user-greeting {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1b5e20;
+  font-family: "Poppins", sans-serif;
+  white-space: nowrap;
+}
+
+.btn-logout-header {
+  background: #ffffff;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  transition: background-color 0.15s ease;
+}
+
+.btn-logout-header:hover {
+  background: #fee2e2;
+}
+
 .mobile-btn {
   width: max-content;
   margin: 1rem auto 0 auto;

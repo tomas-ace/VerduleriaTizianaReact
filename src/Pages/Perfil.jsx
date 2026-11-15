@@ -1,31 +1,39 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchWithFallback, patchWithFallback } from '../data/mockData.js';
+import {
+  eliminarUsuario,
+  fetchWithFallback,
+  patchWithFallback,
+} from '../data/mockData.js';
 import '../styles/Perfil.css';
 
 function Perfil({ usuarioId, onLogout }) {
   const navigate = useNavigate();
 
   const [usuario, setUsuario] = useState(null);
-  const [cargando, setCargando] = useState(true);
-
+  const [cargando, setCargando] = useState(usuarioId !== null);
 
   const [editando, setEditando] = useState(false);
   const [cambiandoPassword, setCambiandoPassword] = useState(false);
 
- 
   const [mail, setMail] = useState('');
   const [telefono, setTelefono] = useState('');
   const [direccion, setDireccion] = useState('');
-
 
   const [nuevaPassword, setNuevaPassword] = useState('');
   const [repetirPassword, setRepetirPassword] = useState('');
 
   useEffect(() => {
+    if (usuarioId === null) {
+      return;
+    }
+
+    let activo = true;
+
     const cargarUsuario = async () => {
       try {
         const usuarios = await fetchWithFallback('/usuarios', 'usuarios');
+        if (!activo) return;
 
         const usuarioEncontrado = usuarios.find(
           (u) => Number(u.id) === Number(usuarioId)
@@ -42,15 +50,15 @@ function Perfil({ usuarioId, onLogout }) {
       } catch (error) {
         console.error('Error al cargar el perfil:', error);
       } finally {
-        setCargando(false);
+        if (activo) setCargando(false);
       }
     };
 
-    if (usuarioId !== null) {
-      cargarUsuario();
-    } else {
-      setCargando(false);
-    }
+    cargarUsuario();
+
+    return () => {
+      activo = false;
+    };
   }, [usuarioId]);
 
   const handleLogout = () => {
@@ -61,6 +69,23 @@ function Perfil({ usuarioId, onLogout }) {
     if (confirmar) {
       onLogout();
       navigate('/');
+    }
+  };
+
+  const handleEliminarCuenta = async () => {
+    const confirmar = window.confirm(
+      '¿Estás seguro de que querés eliminar tu cuenta permanentemente? Esta acción eliminará tu usuario de db.json y no se puede deshacer.'
+    );
+
+    if (!confirmar) return;
+
+    try {
+      await eliminarUsuario(usuarioId);
+      onLogout('Tu cuenta fue eliminada correctamente.');
+      navigate('/');
+    } catch (error) {
+      console.error('Error al eliminar cuenta:', error);
+      alert('Ocurrió un error al eliminar la cuenta.');
     }
   };
 
@@ -284,6 +309,20 @@ function Perfil({ usuarioId, onLogout }) {
           </button>
         </form>
       )}
+
+        <div className="perfil-danger-zone">
+          <div className="perfil-danger-info">
+            <strong>Zona de peligro</strong>
+            <p>Eliminá tu usuario de forma permanente de la base de datos.</p>
+          </div>
+          <button
+            type="button"
+            className="btn-eliminar-cuenta"
+            onClick={handleEliminarCuenta}
+          >
+            Eliminar cuenta
+          </button>
+        </div>
       </section>
     </div>
   );

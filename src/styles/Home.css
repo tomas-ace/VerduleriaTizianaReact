@@ -479,7 +479,7 @@
 }
 
 .qty-stepper__input {
-  width: 36px;
+  width: 38px;
   border: none;
   background: transparent;
   text-align: center;
@@ -489,6 +489,51 @@
   color: #0f172a;
   padding: 0;
   outline: none;
+}
+
+.home-unit-selector {
+  display: inline-flex;
+  background: #f1f5f9;
+  border-radius: 999px;
+  padding: 2px;
+  gap: 2px;
+  margin-bottom: 0.6rem;
+  width: fit-content;
+}
+
+.home-unit-selector--compact {
+  margin-bottom: 0.15rem;
+  margin-top: 0.15rem;
+}
+
+.home-unit-pill {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.home-unit-pill:hover {
+  color: #0f172a;
+}
+
+.home-unit-pill.active {
+  background: #2e7d32;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.home-unit-weight-hint {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #94a3b8;
+  line-height: 1.1;
 }
 
 /* ==========================================

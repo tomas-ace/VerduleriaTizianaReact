@@ -1,6 +1,10 @@
 
 
 
+.productos-page {
+    padding: 32px 0 56px;
+}
+
 .productos-page .productos-container {
     width: 1170px;
     max-width: 92%;
@@ -141,6 +145,16 @@
 
 .productos-page .producto-info {
     padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.productos-page .producto-top-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
 }
 
 .productos-page .producto-categoria {
@@ -148,7 +162,55 @@
     color: #5f6973;
     text-transform: uppercase;
     font-weight: bold;
-    margin-bottom: 5px;
+    margin: 0;
+}
+
+.productos-page .unidad-fija-tag {
+    font-size: 10px;
+    font-weight: 700;
+    color: #2d7d32;
+    background: #e8f5e9;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.productos-page .unidad-selector {
+    display: inline-flex;
+    background: #f1f5f9;
+    border-radius: 999px;
+    padding: 2px;
+    gap: 2px;
+    margin-bottom: 10px;
+    width: fit-content;
+}
+
+.productos-page .unidad-pill {
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.productos-page .unidad-pill:hover {
+    color: #1e293b;
+}
+
+.productos-page .unidad-pill.activo {
+    background: #2d7d32;
+    color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.productos-page .producto-peso-aprox {
+    font-size: 10px;
+    color: #94a3b8;
+    font-weight: 500;
 }
 
 .productos-page .producto-nombre {
@@ -171,12 +233,20 @@
 .productos-page .producto-footer {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .productos-page .producto-precio {
     display: flex;
     flex-direction: column;
+}
+
+.productos-page .precio-linea {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
 }
 
 .productos-page .precio-actual {
@@ -186,20 +256,72 @@
 }
 
 .productos-page .producto-unidad {
-    font-size: 10px;
+    font-size: 11px;
     color: #777;
+}
+
+.productos-page .producto-acciones {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.productos-page .producto-stepper {
+    display: inline-flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 999px;
+    padding: 2px 3px;
+    gap: 2px;
+}
+
+.productos-page .producto-stepper__btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: #e2e8f0;
+    color: #1e293b;
+    font-weight: 800;
+    font-size: 13px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.productos-page .producto-stepper__btn:hover {
+    background: #2d7d32;
+    color: #ffffff;
+}
+
+.productos-page .producto-stepper__input {
+    width: 34px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f172a;
+    outline: none;
 }
 
 .productos-page .btn-agregar {
     border: none;
     background-color: #2d7d32;
     color: white;
-    padding: 8px 14px;
+    padding: 8px 12px;
     border-radius: 18px;
     font-size: 12px;
     font-weight: bold;
     cursor: pointer;
     transition: 0.2s;
+    white-space: nowrap;
 }
 
 .productos-page .btn-agregar:hover {
