@@ -10,7 +10,11 @@ import '../styles/RecetaDetalle.css';
 
 const PRESET_PERSONAS = [2, 4, 6, 8];
 
-function RecetaDetalle({ onAddToCart }) {
+function RecetaDetalle({
+  onAddToCart,
+  favoriteIds = [],
+  onToggleFavorite,
+}) {
   const { id } = useParams();
   const recetaId = Number(id);
 
@@ -30,15 +34,20 @@ function RecetaDetalle({ onAddToCart }) {
   const [comensales, setComensales] = useState(baseComensales);
   const [customValue, setCustomValue] = useState('');
   const [excludedIds, setExcludedIds] = useState([]);
+  const [prevRecetaKey, setPrevRecetaKey] = useState(
+    `${receta?.id}-${receta?.comensales}`
+  );
 
-  useEffect(() => {
+  const currentRecetaKey = `${receta?.id}-${receta?.comensales}`;
+  if (currentRecetaKey !== prevRecetaKey) {
+    setPrevRecetaKey(currentRecetaKey);
     if (receta) {
       const initial = receta.comensales || 4;
       setComensales(initial);
       setCustomValue(PRESET_PERSONAS.includes(initial) ? '' : String(initial));
       setExcludedIds([]);
     }
-  }, [receta?.id, receta?.comensales]);
+  }
 
   useEffect(() => {
     fetchWithFallback('/recetas', 'recetas').then((data) => {
@@ -168,6 +177,7 @@ function RecetaDetalle({ onAddToCart }) {
 
   const isCustomActive =
     customValue !== '' && !PRESET_PERSONAS.includes(comensales);
+  const isFav = favoriteIds.includes(recetaId);
 
   return (
     <div className="detalle-main">
@@ -184,6 +194,30 @@ function RecetaDetalle({ onAddToCart }) {
             alt={receta.title}
             className="detalle-img"
           />
+          <button
+            type="button"
+            className={`detalle-fav-btn ${isFav ? 'active' : ''}`}
+            onClick={() => onToggleFavorite && onToggleFavorite(recetaId)}
+            aria-label={isFav ? 'Quitar de favoritas' : 'Guardar en favoritas'}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="17"
+              height="17"
+              fill="currentColor"
+              viewBox="0 0 16 16"
+            >
+              {isFav ? (
+                <path
+                  fillRule="evenodd"
+                  d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
+                />
+              ) : (
+                <path d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 8 1.146c4.721-4.186 15.333 3.722 8 13.854z" />
+              )}
+            </svg>
+            <span>{isFav ? 'En favoritas' : 'Guardar receta'}</span>
+          </button>
           <div className="detalle-overlay">
             <div className="detalle-badges">
               <span className="badge-cat">{catName}</span>

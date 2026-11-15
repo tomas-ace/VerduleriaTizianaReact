@@ -18,7 +18,12 @@ const esUnidadEntera = (u) => {
   return n === 'unidad' || n === 'atado' || n === 'planta' || n === 'dientes';
 };
 
-function Home({ onOpenRecipeModal, onAddProduct }) {
+function Home({
+  onOpenRecipeModal,
+  onAddProduct,
+  favoriteIds = [],
+  onToggleFavorite,
+}) {
   const navigate = useNavigate();
   const [featuredProducts, setFeaturedProducts] = useState(
     fallbackData.productos.slice(4, 7)
@@ -636,6 +641,8 @@ function Home({ onOpenRecipeModal, onAddProduct }) {
               allOffers
             );
 
+            const isFav = favoriteIds.includes(Number(recipe.id));
+
             return (
               <article
                 className={`recipe-card ${
@@ -649,12 +656,41 @@ function Home({ onOpenRecipeModal, onAddProduct }) {
                     alt={recipe.title}
                     className="recipe-card__image"
                   />
-                  {offerInfo.hasOffer && (
-                    <span className="recipe-card__badge-offer">
-                      {offerInfo.badgeText}
-                    </span>
-                  )}
-                  <span className="recipe-card__badge">{nivelDificultad}</span>
+                  <div className="recipe-card__top-badges">
+                    {offerInfo.hasOffer && (
+                      <span className="recipe-card__badge-offer">
+                        {offerInfo.badgeText}
+                      </span>
+                    )}
+                    <span className="recipe-card__badge">{nivelDificultad}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={`home-recipe-fav ${isFav ? 'active' : ''}`}
+                    onClick={() =>
+                      onToggleFavorite && onToggleFavorite(recipe.id)
+                    }
+                    aria-label={
+                      isFav ? 'Quitar de favoritas' : 'Marcar como favorita'
+                    }
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      fill="currentColor"
+                      viewBox="0 0 16 16"
+                    >
+                      {isFav ? (
+                        <path
+                          fillRule="evenodd"
+                          d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
+                        />
+                      ) : (
+                        <path d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 8 1.146c4.721-4.186 15.333 3.722 8 13.854z" />
+                      )}
+                    </svg>
+                  </button>
                   <div className="recipe-card__overlay">
                     <h3 className="recipe-card__title">{recipe.title}</h3>
                     <div className="recipe-card__meta">
