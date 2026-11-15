@@ -12,7 +12,7 @@ function mapCategoryName(name) {
   return name;
 }
 
-function Recetas({ onOpenRecipeModal }) {
+function Recetas({ onOpenRecipeModal, favoriteIds = [], onToggleFavorite }) {
   const navigate = useNavigate();
   const filtersListRef = useRef(null);
 
@@ -29,7 +29,6 @@ function Recetas({ onOpenRecipeModal }) {
   const [ofertas, setOfertas] = useState(fallbackData.Oferta);
 
   const [selectedCategory, setSelectedCategory] = useState('0');
-  const [favorites, setFavorites] = useState([]);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
@@ -89,9 +88,9 @@ function Recetas({ onOpenRecipeModal }) {
   };
 
   const toggleFavorite = (id) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((favId) => favId !== id) : [...prev, id]
-    );
+    if (onToggleFavorite) {
+      onToggleFavorite(id);
+    }
   };
 
   const categoriasMap = {};
@@ -122,11 +121,13 @@ function Recetas({ onOpenRecipeModal }) {
   const filteredRecetas =
     selectedCategory === '0'
       ? recetas
-      : selectedCategory === 'ofertas'
-        ? recetas.filter((r) => offerInfoByRecipe[r.id]?.hasOffer)
-        : recetas.filter(
-            (r) => String(recetaCatMap[r.id]) === String(selectedCategory)
-          );
+      : selectedCategory === 'favoritas'
+        ? recetas.filter((r) => favoriteIds.includes(Number(r.id)))
+        : selectedCategory === 'ofertas'
+          ? recetas.filter((r) => offerInfoByRecipe[r.id]?.hasOffer)
+          : recetas.filter(
+              (r) => String(recetaCatMap[r.id]) === String(selectedCategory)
+            );
 
   return (
     <div className="recetas-main-container">
@@ -197,6 +198,28 @@ function Recetas({ onOpenRecipeModal }) {
             </button>
             <button
               type="button"
+              className={`filter-btn filter-btn--fav ${
+                selectedCategory === 'favoritas' ? 'active' : ''
+              }`}
+              onClick={() => setSelectedCategory('favoritas')}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"
+                />
+              </svg>
+              Favoritas{favoriteIds.length > 0 ? ` (${favoriteIds.length})` : ''}
+            </button>
+            <button
+              type="button"
               className={`filter-btn filter-btn--offer ${
                 selectedCategory === 'ofertas' ? 'active' : ''
               }`}
@@ -242,15 +265,43 @@ function Recetas({ onOpenRecipeModal }) {
 
       <section className="recetas-grid" id="recetas-grid">
         {filteredRecetas.length === 0 ? (
-          <p
-            style={{
-              gridColumn: '1 / -1',
-              textAlign: 'center',
-              color: '#777',
-            }}
-          >
-            No hay recetas en esta categoría.
-          </p>
+          selectedCategory === 'favoritas' ? (
+            <div className="recetas-empty-favs">
+              <div className="recetas-empty-favs__icon" aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 8 1.146c4.721-4.186 15.333 3.722 8 13.854z" />
+                </svg>
+              </div>
+              <h3>Todavía no tenés recetas favoritas</h3>
+              <p>
+                Tocá el corazón en las recetas que más te gusten para guardarlas
+                y encontrarlas rápido acá.
+              </p>
+              <button
+                type="button"
+                className="recetas-empty-favs__btn"
+                onClick={() => setSelectedCategory('0')}
+              >
+                Explorar todas las recetas
+              </button>
+            </div>
+          ) : (
+            <p
+              style={{
+                gridColumn: '1 / -1',
+                textAlign: 'center',
+                color: '#777',
+              }}
+            >
+              No hay recetas en esta categoría.
+            </p>
+          )
         ) : (
           filteredRecetas.map((recipe) => {
             const catId = recetaCatMap[recipe.id];
@@ -269,7 +320,7 @@ function Recetas({ onOpenRecipeModal }) {
                 ? `${description.substring(0, 77)}...`
                 : description;
 
-            const isFav = favorites.includes(recipe.id);
+            const isFav = favoriteIds.includes(Number(recipe.id));
             const offerInfo = offerInfoByRecipe[recipe.id];
 
             return (

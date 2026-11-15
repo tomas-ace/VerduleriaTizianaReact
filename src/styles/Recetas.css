@@ -97,6 +97,7 @@
 .filter-btn {
   background-color: #f3f4f6;
   border: none;
+  outline: none;
   padding: 0.5rem 1.2rem;
   border-radius: 20px;
   font-size: 0.9rem;
@@ -105,6 +106,10 @@
   font-weight: 500;
   transition: all 0.2s ease;
   white-space: nowrap;
+}
+
+.filter-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.35);
 }
 
 .filter-btn:hover {
@@ -131,6 +136,80 @@
   background-color: #e65100;
   color: #ffffff;
   border-color: #e65100;
+}
+
+.filter-btn--fav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #eaf5ec;
+  color: #2e7d32;
+  border: 1px solid #b7dfc0;
+  font-weight: 600;
+}
+
+.filter-btn--fav:hover {
+  background-color: #dcefe0;
+}
+
+.filter-btn--fav.active {
+  background-color: #2e7d32;
+  color: #ffffff;
+  border-color: #2e7d32;
+}
+
+.recetas-empty-favs {
+  grid-column: 1 / -1;
+  background-color: #f8faf8;
+  border: 1.5px dashed #c8e6c9;
+  border-radius: 18px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  max-width: 520px;
+  margin: 0.5rem auto;
+  width: 100%;
+}
+
+.recetas-empty-favs__icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.9rem;
+}
+
+.recetas-empty-favs h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.recetas-empty-favs p {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin-bottom: 1.35rem;
+  line-height: 1.5;
+}
+
+.recetas-empty-favs__btn {
+  background-color: #2e7d32;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.recetas-empty-favs__btn:hover {
+  background-color: #1b5e20;
 }
 
 /* Grid */
@@ -258,8 +337,9 @@
 }
 
 .receta-card__fav.active {
-  color: #ef4444;
-  background: rgba(255, 255, 255, 0.9);
+  color: #2e7d32;
+  background: rgba(234, 245, 236, 0.96);
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.22);
 }
 
 .receta-card__content {

@@ -678,6 +678,7 @@ export const fallbackData = {
       precio: 3500,
     },
   ],
+  recetasFavoritas: [],
 };
 
 const LOCAL_KEYS = {
@@ -685,6 +686,8 @@ const LOCAL_KEYS = {
   usuariosEliminados: 'usuarios_eliminados_tiziana',
   pedidos: 'pedidos_extra_tiziana',
   pedidoDetalle: 'pedido_detalle_extra_tiziana',
+  recetasFavVisitante: 'recetas_fav_visitante_tiziana',
+  recetasFavUsuarios: 'recetas_fav_usuarios_tiziana',
 };
 
 function readLocalArray(key) {
@@ -854,6 +857,11 @@ export async function eliminarUsuario(id) {
   );
   writeLocalArray(LOCAL_KEYS.usuarios, extras);
 
+  const favUsuarios = readLocalArray(LOCAL_KEYS.recetasFavUsuarios).filter(
+    (fav) => Number(fav.idUsuario) !== numId
+  );
+  writeLocalArray(LOCAL_KEYS.recetasFavUsuarios, favUsuarios);
+
   if (!apiRes.ok) {
     const eliminados = readLocalArray(LOCAL_KEYS.usuariosEliminados);
     if (!eliminados.some((item) => Number(item) === numId)) {
@@ -862,6 +870,104 @@ export async function eliminarUsuario(id) {
   }
 
   return true;
+}
+
+export async function obtenerRecetasFavoritas(usuarioId) {
+  if (usuarioId === null || usuarioId === undefined) {
+    return Array.from(
+      new Set(
+        readLocalArray(LOCAL_KEYS.recetasFavVisitante)
+          .map((id) => Number(id))
+          .filter((id) => !Number.isNaN(id) && id > 0)
+      )
+    );
+  }
+
+  const numUser = Number(usuarioId);
+  const apiRes = await requestDbApi(`/recetasFavoritas?idUsuario=${numUser}`);
+  if (apiRes.ok && Array.isArray(apiRes.data)) {
+    return Array.from(
+      new Set(
+        apiRes.data
+          .filter((fav) => Number(fav.idUsuario) === numUser)
+          .map((fav) => Number(fav.idReceta))
+          .filter((id) => !Number.isNaN(id) && id > 0)
+      )
+    );
+  }
+
+  const localFavs = readLocalArray(LOCAL_KEYS.recetasFavUsuarios);
+  return Array.from(
+    new Set(
+      localFavs
+        .filter((fav) => Number(fav.idUsuario) === numUser)
+        .map((fav) => Number(fav.idReceta))
+        .filter((id) => !Number.isNaN(id) && id > 0)
+    )
+  );
+}
+
+export async function alternarRecetaFavorita(usuarioId, idReceta) {
+  const numReceta = Number(idReceta);
+
+  if (usuarioId === null || usuarioId === undefined) {
+    const actuales = readLocalArray(LOCAL_KEYS.recetasFavVisitante).map((id) =>
+      Number(id)
+    );
+    const existe = actuales.includes(numReceta);
+    const siguientes = existe
+      ? actuales.filter((id) => id !== numReceta)
+      : [...actuales, numReceta];
+    writeLocalArray(LOCAL_KEYS.recetasFavVisitante, siguientes);
+    return { esFavorita: !existe };
+  }
+
+  const numUser = Number(usuarioId);
+  const apiRes = await requestDbApi(`/recetasFavoritas?idUsuario=${numUser}`);
+
+  if (apiRes.ok && Array.isArray(apiRes.data)) {
+    const coincidencias = apiRes.data.filter(
+      (fav) =>
+        Number(fav.idUsuario) === numUser && Number(fav.idReceta) === numReceta
+    );
+
+    if (coincidencias.length > 0) {
+      for (const item of coincidencias) {
+        await requestDbApi(`/recetasFavoritas/${item.id}`, {
+          method: 'DELETE',
+        });
+      }
+      return { esFavorita: false };
+    }
+
+    await requestDbApi('/recetasFavoritas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        idUsuario: numUser,
+        idReceta: numReceta,
+      }),
+    });
+    return { esFavorita: true };
+  }
+
+  // Fallback local si no hay API disponible
+  const localFavs = readLocalArray(LOCAL_KEYS.recetasFavUsuarios);
+  const yaEsta = localFavs.some(
+    (fav) =>
+      Number(fav.idUsuario) === numUser && Number(fav.idReceta) === numReceta
+  );
+  const actualizados = yaEsta
+    ? localFavs.filter(
+        (fav) =>
+          !(
+            Number(fav.idUsuario) === numUser &&
+            Number(fav.idReceta) === numReceta
+          )
+      )
+    : [...localFavs, { idUsuario: numUser, idReceta: numReceta }];
+  writeLocalArray(LOCAL_KEYS.recetasFavUsuarios, actualizados);
+  return { esFavorita: !yaEsta };
 }
 
 export async function crearPedidoDesdeCarrito({

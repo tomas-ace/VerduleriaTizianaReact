@@ -1348,5 +1348,12 @@
       "Horarios de Entrega": "Entrega: Lun-Dom de 9 a 21 hs",
       "Horarios de Atencion": ""
     }
+  ],
+  "recetasFavoritas": [
+    {
+      "id": 1,
+      "idUsuario": 4,
+      "idReceta": 1
+    }
   ]
 }

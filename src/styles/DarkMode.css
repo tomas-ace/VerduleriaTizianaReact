@@ -507,6 +507,61 @@ html.dark .filter-btn--offer.active {
   border-color: var(--dm-amber);
 }
 
+html.dark .filter-btn--fav {
+  background-color: rgba(129, 199, 132, 0.12);
+  color: var(--dm-primary);
+  border-color: var(--dm-border-strong);
+}
+
+html.dark .filter-btn--fav:hover {
+  background-color: rgba(129, 199, 132, 0.22);
+}
+
+html.dark .filter-btn--fav.active {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+  border-color: var(--dm-primary);
+}
+
+html.dark .receta-card__fav.active,
+html.dark .home-recipe-fav.active {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .detalle-fav-btn.active {
+  background-color: var(--dm-primary);
+  border-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .recetas-empty-favs {
+  background-color: var(--dm-card);
+  border-color: var(--dm-border-strong);
+}
+
+html.dark .recetas-empty-favs__icon {
+  background-color: var(--dm-elevated);
+  color: var(--dm-primary);
+}
+
+html.dark .recetas-empty-favs h3 {
+  color: var(--dm-text);
+}
+
+html.dark .recetas-empty-favs p {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .recetas-empty-favs__btn {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .recetas-empty-favs__btn:hover {
+  background-color: var(--dm-primary-hover);
+}
+
 html.dark .receta-card {
   background-color: var(--dm-card);
   border: 1px solid var(--dm-border);

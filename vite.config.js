@@ -145,6 +145,11 @@ function dbJsonApiPlugin() {
                 (dir) => Number(dir.idUsuario) !== Number(itemId)
               );
             }
+            if (collection === 'usuarios' && Array.isArray(db.recetasFavoritas)) {
+              db.recetasFavoritas = db.recetasFavoritas.filter(
+                (fav) => Number(fav.idUsuario) !== Number(itemId)
+              );
+            }
             fs.writeFileSync(dbFileUrl, `${JSON.stringify(db, null, 2)}\n`, 'utf8');
             sendJson(res, 200, eliminado || { ok: true });
             return;

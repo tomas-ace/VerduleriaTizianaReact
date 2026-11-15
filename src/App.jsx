@@ -13,12 +13,14 @@ import Pedidos from './Pages/Pedidos';
 import Contacto from './Pages/Contacto';
 import Perfil from './Pages/Perfil';
 import {
+  alternarRecetaFavorita,
   buildCartItem,
   convertCartItemUnit,
   fallbackData,
   fetchWithFallback,
   mergeIntoCart,
   normalizeCartUnit,
+  obtenerRecetasFavoritas,
   updateCartItemQuantity,
 } from './data/mockData';
 import './styles/DarkMode.css';
@@ -40,6 +42,7 @@ function App() {
   });
   const [usuarioObj, setUsuarioObj] = useState(null);
   const [ordersVersion, setOrdersVersion] = useState(0);
+  const [favoriteRecipeIds, setFavoriteRecipeIds] = useState([]);
 
   const [productosCatalogo, setProductosCatalogo] = useState(
     fallbackData.productos
@@ -110,6 +113,28 @@ function App() {
   }, [usuarioActual]);
 
   const usuarioActivo = usuarioActual === null ? null : usuarioObj;
+
+  useEffect(() => {
+    let activo = true;
+    obtenerRecetasFavoritas(usuarioActual).then((ids) => {
+      if (activo) setFavoriteRecipeIds(ids);
+    });
+    return () => {
+      activo = false;
+    };
+  }, [usuarioActual]);
+
+  const handleToggleFavoriteRecipe = async (idReceta) => {
+    const numId = Number(idReceta);
+    setFavoriteRecipeIds((prev) =>
+      prev.includes(numId) ? prev.filter((id) => id !== numId) : [...prev, numId]
+    );
+    try {
+      await alternarRecetaFavorita(usuarioActual, numId);
+    } catch (err) {
+      console.error('Error al actualizar receta favorita:', err);
+    }
+  };
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
@@ -304,6 +329,8 @@ function App() {
               <Home
                 onOpenRecipeModal={setRecetaModal}
                 onAddProduct={handleAddProductToCart}
+                favoriteIds={favoriteRecipeIds}
+                onToggleFavorite={handleToggleFavoriteRecipe}
               />
             }
           />
@@ -313,11 +340,23 @@ function App() {
           />
           <Route
             path="/recetas"
-            element={<Recetas onOpenRecipeModal={setRecetaModal} />}
+            element={
+              <Recetas
+                onOpenRecipeModal={setRecetaModal}
+                favoriteIds={favoriteRecipeIds}
+                onToggleFavorite={handleToggleFavoriteRecipe}
+              />
+            }
           />
           <Route
             path="/recetas/:id"
-            element={<RecetaDetalle onAddToCart={handleAddRecipeToCart} />}
+            element={
+              <RecetaDetalle
+                onAddToCart={handleAddRecipeToCart}
+                favoriteIds={favoriteRecipeIds}
+                onToggleFavorite={handleToggleFavoriteRecipe}
+              />
+            }
           />
           <Route
             path="/pedidos"
