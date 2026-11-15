@@ -1,4 +1,22 @@
 const API_URL = 'http://localhost:3000';
+const DEV_DB_API = '/db-api';
+
+async function requestDbApi(endpoint, options = {}) {
+  const bases = import.meta.env?.DEV ? [DEV_DB_API, API_URL] : [API_URL];
+  for (const base of bases) {
+    try {
+      const response = await fetch(`${base}${endpoint}`, options);
+      const contentType = response.headers.get('content-type') || '';
+      if (response.ok && contentType.includes('application/json')) {
+        const data = await response.json();
+        return { ok: true, data };
+      }
+    } catch {
+      // try next base or fallback
+    }
+  }
+  return { ok: false, data: null };
+}
 
 export const fallbackData = {
   tienda: [
@@ -60,7 +78,7 @@ export const fallbackData = {
       precioPorPeso: 1300,
       categoria: 'Frutas',
       descripcion: 'Banana Cavendish de Ecuador.',
-      imagen: '/assets/productos-img/generico-frutas.png',
+      imagen: '/assets/productos-img/banana.jpg',
     },
     {
       id: 7,
@@ -68,7 +86,7 @@ export const fallbackData = {
       precioPorPeso: 900,
       categoria: 'Frutas',
       descripcion: 'Limón Tucumano primera calidad.',
-      imagen: '/assets/productos-img/generico-frutas.png',
+      imagen: '/assets/productos-img/limon.jpg',
     },
     {
       id: 8,
@@ -76,7 +94,7 @@ export const fallbackData = {
       precioPorPeso: 2500,
       categoria: 'Verduras',
       descripcion: 'Morrón rojo carnoso, ideal para asar.',
-      imagen: '/assets/productos-img/tomate-redondo.png',
+      imagen: '/assets/productos-img/morron-rojo.jpg',
     },
     {
       id: 9,
@@ -84,7 +102,7 @@ export const fallbackData = {
       precioPorPeso: 4000,
       categoria: 'Verduras',
       descripcion: 'Cabeza de ajo blanco.',
-      imagen: '/assets/productos-img/generico-verduras.png',
+      imagen: '/assets/productos-img/ajo.jpg',
     },
     {
       id: 10,
@@ -92,7 +110,7 @@ export const fallbackData = {
       precioPorPeso: 1100,
       categoria: 'Verduras',
       descripcion: 'Lechuga fresca repollada.',
-      imagen: '/assets/productos-img/generico-verduras.png',
+      imagen: '/assets/productos-img/lechuga-capuchina.jpg',
     },
     {
       id: 11,
@@ -100,7 +118,7 @@ export const fallbackData = {
       precioPorPeso: 1800,
       categoria: 'Frutas',
       descripcion: 'Palta de tamaño mediano.',
-      imagen: '/assets/productos-img/generico-verduras.png',
+      imagen: '/assets/productos-img/palta-hass.jpg',
     },
     {
       id: 12,
@@ -124,7 +142,7 @@ export const fallbackData = {
       precioPorPeso: 500,
       categoria: 'Verduras',
       descripcion: 'Zapallo anco tipo coreano.',
-      imagen: '/assets/productos-img/calabacin.png',
+      imagen: '/assets/productos-img/zapallo-anco.jpg',
     },
     {
       id: 15,
@@ -132,7 +150,7 @@ export const fallbackData = {
       precioPorPeso: 2800,
       categoria: 'Frutas',
       descripcion: 'Uva negra sin semilla.',
-      imagen: '/assets/productos-img/generico-frutas.png',
+      imagen: '/assets/productos-img/uva-negra.jpg',
     },
     {
       id: 16,
@@ -140,7 +158,7 @@ export const fallbackData = {
       precioPorPeso: 1200,
       categoria: 'Verduras',
       descripcion: 'Berenjena fresca para asar o rellenas.',
-      imagen: '/assets/productos-img/berebjenas.png',
+      imagen: '/assets/productos-img/berenjena.jpg',
     },
     {
       id: 17,
@@ -148,7 +166,7 @@ export const fallbackData = {
       precioPorPeso: 8000,
       categoria: 'Verduras',
       descripcion: 'Raíz de jengibre fresca.',
-      imagen: '/assets/productos-img/generico-verduras.png',
+      imagen: '/assets/productos-img/jengibre.jpg',
     },
     {
       id: 18,
@@ -156,7 +174,7 @@ export const fallbackData = {
       precioPorPeso: 500,
       categoria: 'Verduras',
       descripcion: 'Atado de albahaca fresca y aromática.',
-      imagen: '/assets/productos-img/generico-verduras.png',
+      imagen: '/assets/productos-img/albahaca.jpg',
     },
     {
       id: 19,
@@ -164,7 +182,7 @@ export const fallbackData = {
       precioPorPeso: 400,
       categoria: 'Verduras',
       descripcion: 'Atado de cilantro fresco.',
-      imagen: '/assets/productos-img/generico-verduras.png',
+      imagen: '/assets/productos-img/cilantro.jpg',
     },
     {
       id: 20,
@@ -172,7 +190,7 @@ export const fallbackData = {
       precioPorPeso: 800,
       categoria: 'Verduras',
       descripcion: 'Calabacín (zucchini) verde y tierno.',
-      imagen: '/assets/productos-img/generico-verduras.png',
+      imagen: '/assets/productos-img/calabacin.jpg',
     },
     {
       id: 21,
@@ -180,7 +198,7 @@ export const fallbackData = {
       precioPorPeso: 600,
       categoria: 'Verduras',
       descripcion: 'Atado de espinaca fresca.',
-      imagen: '/assets/productos-img/generico-verduras.png',
+      imagen: '/assets/productos-img/espinaca.jpg',
     },
     {
       id: 22,
@@ -188,7 +206,7 @@ export const fallbackData = {
       precioPorPeso: 700,
       categoria: 'Verduras',
       descripcion: 'Pepino fresco y crujiente.',
-      imagen: '/assets/productos-img/generico-verduras.png',
+      imagen: '/assets/productos-img/pepino.jpg',
     },
     {
       id: 23,
@@ -196,7 +214,7 @@ export const fallbackData = {
       precioPorPeso: 500,
       categoria: 'Verduras',
       descripcion: 'Planta de apio verde y crujiente.',
-      imagen: '/assets/productos-img/generico-verduras.png',
+      imagen: '/assets/productos-img/apio.jpg',
     },
     {
       id: 24,
@@ -204,7 +222,7 @@ export const fallbackData = {
       precioPorPeso: 3500,
       categoria: 'Frutas',
       descripcion: 'Kiwi verde importado.',
-      imagen: '/assets/productos-img/generico-frutas.png',
+      imagen: '/assets/productos-img/kiwi.jpg',
     },
     {
       id: 25,
@@ -212,7 +230,7 @@ export const fallbackData = {
       precioPorPeso: 2000,
       categoria: 'Frutas',
       descripcion: 'Ananá tropical entero.',
-      imagen: '/assets/productos-img/generico-frutas.png',
+      imagen: '/assets/productos-img/anana.jpg',
     },
     {
       id: 26,
@@ -220,7 +238,7 @@ export const fallbackData = {
       precioPorPeso: 450,
       categoria: 'Verduras',
       descripcion: 'Atado de menta fresca.',
-      imagen: '/assets/productos-img/generico-verduras.png',
+      imagen: '/assets/productos-img/menta.jpg',
     },
     {
       id: 27,
@@ -228,7 +246,7 @@ export const fallbackData = {
       precioPorPeso: 1500,
       categoria: 'Frutas',
       descripcion: 'Granada roja, fresca y dulce.',
-      imagen: '/assets/productos-img/generico-frutas.png',
+      imagen: '/assets/productos-img/granada.jpg',
     },
   ],
   Oferta: [
@@ -664,6 +682,7 @@ export const fallbackData = {
 
 const LOCAL_KEYS = {
   usuarios: 'usuarios_extra_tiziana',
+  usuariosEliminados: 'usuarios_eliminados_tiziana',
   pedidos: 'pedidos_extra_tiziana',
   pedidoDetalle: 'pedido_detalle_extra_tiziana',
 };
@@ -690,17 +709,28 @@ function mergeWithLocalExtras(fallbackKey, baseList) {
   const safeBase = Array.isArray(baseList) ? baseList : [];
 
   if (fallbackKey === 'usuarios') {
-    const extras = readLocalArray(LOCAL_KEYS.usuarios);
-    const seenIds = new Set(safeBase.map((u) => Number(u.id)));
+    const deletedIds = new Set(
+      readLocalArray(LOCAL_KEYS.usuariosEliminados).map((id) => Number(id))
+    );
+    const extras = readLocalArray(LOCAL_KEYS.usuarios).filter(
+      (u) => !deletedIds.has(Number(u.id))
+    );
+    const overridesById = new Map(extras.map((u) => [Number(u.id), u]));
+
+    const mergedBase = safeBase
+      .filter((u) => !deletedIds.has(Number(u.id)))
+      .map((u) => overridesById.get(Number(u.id)) || u);
+
+    const seenIds = new Set(mergedBase.map((u) => Number(u.id)));
     const seenMails = new Set(
-      safeBase.map((u) => String(u.mail || '').toLowerCase())
+      mergedBase.map((u) => String(u.mail || '').toLowerCase())
     );
     const uniqueExtras = extras.filter(
       (u) =>
         !seenIds.has(Number(u.id)) &&
         !seenMails.has(String(u.mail || '').toLowerCase())
     );
-    return [...safeBase, ...uniqueExtras];
+    return [...mergedBase, ...uniqueExtras];
   }
 
   if (fallbackKey === 'pedidos') {
@@ -728,19 +758,35 @@ function mergeWithLocalExtras(fallbackKey, baseList) {
     return [...safeBase, ...uniqueExtras];
   }
 
+  if (fallbackKey === 'productos') {
+    return safeBase.map((prod) => {
+      const ref = fallbackData.productos.find(
+        (p) => Number(p.id) === Number(prod.id)
+      );
+      if (!prod.imagen && ref?.imagen) {
+        return { ...prod, imagen: ref.imagen };
+      }
+      return prod;
+    });
+  }
+
   return safeBase;
 }
 
 export async function fetchWithFallback(endpoint, fallbackKey) {
-  let baseData;
-  try {
-    const response = await fetch(`${API_URL}${endpoint}`);
-    if (!response.ok) throw new Error('API no disponible');
-    baseData = await response.json();
-  } catch {
-    baseData = fallbackData[fallbackKey];
+  const apiRes = await requestDbApi(endpoint);
+  if (apiRes.ok && Array.isArray(apiRes.data)) {
+    if (fallbackKey === 'productos') {
+      return apiRes.data.map((prod) => {
+        const ref = fallbackData.productos.find(
+          (p) => Number(p.id) === Number(prod.id)
+        );
+        return prod.imagen ? prod : { ...prod, imagen: ref?.imagen };
+      });
+    }
+    return apiRes.data;
   }
-  return mergeWithLocalExtras(fallbackKey, baseData);
+  return mergeWithLocalExtras(fallbackKey, fallbackData[fallbackKey]);
 }
 
 export async function registrarUsuario({
@@ -776,20 +822,46 @@ export async function registrarUsuario({
     contrasena: String(contrasena || ''),
   };
 
-  try {
-    await fetch(`${API_URL}/usuarios`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nuevoUsuario),
-    });
-  } catch {
-    // fallback local
+  const apiRes = await requestDbApi('/usuarios', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(nuevoUsuario),
+  });
+
+  if (apiRes.ok) {
+    return apiRes.data;
   }
+
+  const eliminados = readLocalArray(LOCAL_KEYS.usuariosEliminados).filter(
+    (item) => Number(item) !== nuevoUsuario.id
+  );
+  writeLocalArray(LOCAL_KEYS.usuariosEliminados, eliminados);
 
   const extras = readLocalArray(LOCAL_KEYS.usuarios);
   writeLocalArray(LOCAL_KEYS.usuarios, [...extras, nuevoUsuario]);
 
   return nuevoUsuario;
+}
+
+export async function eliminarUsuario(id) {
+  const numId = Number(id);
+  const apiRes = await requestDbApi(`/usuarios/${numId}`, {
+    method: 'DELETE',
+  });
+
+  const extras = readLocalArray(LOCAL_KEYS.usuarios).filter(
+    (u) => Number(u.id) !== numId
+  );
+  writeLocalArray(LOCAL_KEYS.usuarios, extras);
+
+  if (!apiRes.ok) {
+    const eliminados = readLocalArray(LOCAL_KEYS.usuariosEliminados);
+    if (!eliminados.some((item) => Number(item) === numId)) {
+      writeLocalArray(LOCAL_KEYS.usuariosEliminados, [...eliminados, numId]);
+    }
+  }
+
+  return true;
 }
 
 export async function crearPedidoDesdeCarrito({
@@ -814,6 +886,7 @@ export async function crearPedidoDesdeCarrito({
   );
 
   const nuevoPedido = {
+    id: nroPedido,
     nroPedido,
     estado: 'Preparando',
     idUsuario: Number(usuarioId),
@@ -847,23 +920,21 @@ export async function crearPedidoDesdeCarrito({
     };
   });
 
-  try {
-    await fetch(`${API_URL}/pedidos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nuevoPedido),
-    });
-    await Promise.all(
-      nuevosDetalles.map((det) =>
-        fetch(`${API_URL}/pedidoDetalle`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(det),
-        })
-      )
-    );
-  } catch {
-    // fallback local
+  const pedidoRes = await requestDbApi('/pedidos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(nuevoPedido),
+  });
+
+  if (pedidoRes.ok) {
+    for (const det of nuevosDetalles) {
+      await requestDbApi('/pedidoDetalle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(det),
+      });
+    }
+    return { pedido: pedidoRes.data || nuevoPedido, detalles: nuevosDetalles };
   }
 
   const pedidosExtra = readLocalArray(LOCAL_KEYS.pedidos);
@@ -1160,13 +1231,17 @@ export function buildCartItem({
     ? meta.unidadesDisponibles
     : [normUnit, ...meta.unidadesDisponibles];
 
+  const resolvedImagen =
+    imagen && !String(imagen).includes('generico-')
+      ? imagen
+      : prod?.imagen || imagen || '/assets/productos-img/generico-verduras.png';
+
   return {
     cartKey: `${idProducto}-${normUnit}`,
     idProducto: Number(idProducto),
     nombre: nombre || prod?.nombre || 'Producto',
     categoria: categoria || prod?.categoria || '',
-    imagen:
-      imagen || prod?.imagen || '/assets/productos-img/generico-verduras.png',
+    imagen: resolvedImagen,
     cantidadEscalada: cleanQty,
     unidad: normUnit,
     displayQty: formatCartDisplayQty(cleanQty, normUnit),
@@ -1572,32 +1647,51 @@ export function getRecipeOfferInfo(
   };
 }
 
-export async function patchWithFallback(endpoint, fallbackKey, id, datosActualizados) {
-  try {
-    const response = await fetch(`${API_URL}${endpoint}/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(datosActualizados),
-    });
+export async function patchWithFallback(
+  endpoint,
+  fallbackKey,
+  id,
+  datosActualizados
+) {
+  const apiRes = await requestDbApi(`${endpoint}/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(datosActualizados),
+  });
 
-    if (!response.ok) throw new Error('API no disponible');
-    return await response.json();
-  } catch {
-   
-    const lista = fallbackData[fallbackKey];
-    const index = lista.findIndex((item) => Number(item.id) === Number(id));
-
-    if (index === -1) {
-      throw new Error('Usuario no encontrado en mockData');
-    }
-
-    lista[index] = {
-      ...lista[index],
-      ...datosActualizados,
-    };
-
-    return lista[index];
+  if (apiRes.ok) {
+    return apiRes.data;
   }
+
+  const localKey = LOCAL_KEYS[fallbackKey];
+  if (localKey) {
+    const extras = readLocalArray(localKey);
+    const localIdx = extras.findIndex((item) => Number(item.id) === Number(id));
+    if (localIdx !== -1) {
+      extras[localIdx] = { ...extras[localIdx], ...datosActualizados };
+      writeLocalArray(localKey, extras);
+      return extras[localIdx];
+    }
+  }
+
+  const lista = fallbackData[fallbackKey];
+  const index = lista.findIndex((item) => Number(item.id) === Number(id));
+
+  if (index === -1) {
+    throw new Error('Registro no encontrado en mockData');
+  }
+
+  lista[index] = {
+    ...lista[index],
+    ...datosActualizados,
+  };
+
+  if (localKey) {
+    const extras = readLocalArray(localKey);
+    writeLocalArray(localKey, [...extras, lista[index]]);
+  }
+
+  return lista[index];
 }

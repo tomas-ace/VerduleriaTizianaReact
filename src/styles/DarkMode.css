@@ -1,0 +1,1299 @@
+/* ==========================================================================
+   MODO OSCURO — Frutería Tiziana (Paleta Botánica según Mock de Figma Make)
+   Activado mediante la clase `html.dark`
+   ========================================================================== */
+
+html.dark {
+  color-scheme: dark;
+  --dm-bg: #0d1f10;
+  --dm-bg-alt: #112615;
+  --dm-card: #162819;
+  --dm-elevated: #1e3522;
+  --dm-border: #223a26;
+  --dm-border-strong: #325437;
+  --dm-primary: #81c784;
+  --dm-primary-hover: #66bb6a;
+  --dm-on-primary: #0d1f10;
+  --dm-text: #f2f8f3;
+  --dm-text-secondary: #98be9d;
+  --dm-text-muted: #759c7b;
+  --dm-amber: #f59e0b;
+  --color-hover: #1e3522;
+  --muted: #112615;
+}
+
+html.dark,
+html.dark body {
+  background-color: var(--dm-bg);
+  color: var(--dm-text);
+}
+
+/* ==========================================================================
+   1. HEADER & NAVEGACIÓN
+   ========================================================================== */
+html.dark header {
+  background-color: var(--dm-bg);
+  border-bottom: 1px solid var(--dm-border);
+}
+
+html.dark .logo,
+html.dark .letrassup {
+  color: var(--dm-primary);
+}
+
+html.dark .btnsup {
+  background-color: #142817;
+  color: var(--dm-primary);
+  border: 1.5px solid var(--dm-border-strong);
+  width: 36px;
+  height: 36px;
+}
+
+html.dark .btnsup:hover {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-primary);
+}
+
+html.dark .btnsup.theme-toggle-active {
+  border-color: #4f8355;
+  box-shadow: 0 0 0 2px rgba(129, 199, 132, 0.14);
+}
+
+html.dark .cart-badge {
+  background-color: var(--dm-amber);
+  color: var(--dm-on-primary);
+}
+
+html.dark .btn-ingresar-header {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+  font-weight: 700;
+}
+
+html.dark .btn-ingresar-header:hover {
+  background-color: var(--dm-primary-hover);
+}
+
+html.dark #menu-toggle {
+  background: transparent;
+  color: var(--dm-primary);
+}
+
+html.dark #menu-toggle.active {
+  border-color: var(--dm-primary);
+  color: var(--dm-primary);
+}
+
+html.dark .nav-page {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .nav-page:hover {
+  color: var(--dm-text);
+}
+
+html.dark .nav-page.active {
+  background-color: var(--dm-elevated);
+  color: var(--dm-primary);
+}
+
+@media (max-width: 991px) {
+  html.dark .nav-pages {
+    background-color: var(--dm-card);
+    border-bottom: 1px solid var(--dm-border);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
+  }
+}
+
+/* ==========================================================================
+   2. FOOTER
+   ========================================================================== */
+html.dark .footer-container {
+  background-color: #09160b;
+  border-top: 1px solid var(--dm-border);
+  color: var(--dm-text-secondary);
+}
+
+html.dark .foot-logo,
+html.dark .foot-tit {
+  color: var(--dm-text);
+}
+
+html.dark .foot-item {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .foot-item:hover {
+  color: var(--dm-primary);
+}
+
+html.dark .method {
+  background-color: var(--dm-elevated);
+  color: var(--dm-primary);
+  border: 1px solid var(--dm-border-strong);
+}
+
+html.dark .delivery {
+  color: var(--dm-primary);
+}
+
+html.dark .license {
+  color: var(--dm-text-muted);
+}
+
+/* ==========================================================================
+   3. INICIO (HOME)
+   ========================================================================== */
+html.dark .hero__overlay {
+  background: rgba(9, 22, 11, 0.64);
+}
+
+html.dark .hero__btn--primary {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .hero__btn--primary:hover {
+  background-color: var(--dm-primary-hover);
+}
+
+html.dark .star-feature {
+  background: linear-gradient(135deg, #16351b 0%, #1f4825 100%);
+  border-top: 1px solid var(--dm-border-strong);
+  border-bottom: 1px solid var(--dm-border-strong);
+}
+
+html.dark .star-feature__button {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .featured-products,
+html.dark .recipe-section,
+html.dark .benefits {
+  background-color: var(--dm-bg);
+}
+
+html.dark .daily-offers {
+  background-color: var(--dm-bg-alt);
+}
+
+html.dark .featured-products__subtitle,
+html.dark .recipe-section__subtitle,
+html.dark .featured-products__link,
+html.dark .recipe-section__link {
+  color: var(--dm-primary);
+}
+
+html.dark .featured-products__title,
+html.dark .daily-offers__title,
+html.dark .recipe-section__title,
+html.dark .benefits__title,
+html.dark .benefit-card__title {
+  color: var(--dm-text);
+}
+
+html.dark .product-card,
+html.dark .offer-card,
+html.dark .recipe-card {
+  background-color: var(--dm-card);
+  border-color: var(--dm-border);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+}
+
+html.dark .recipe-card--has-offer {
+  border-color: #d97706;
+}
+
+html.dark .product-card__name,
+html.dark .offer-card__name {
+  color: var(--dm-text);
+}
+
+html.dark .product-card__description,
+html.dark .recipe-card__description,
+html.dark .benefit-card__text {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .product-card__category,
+html.dark .product-card__price--unit,
+html.dark .product-card__price--discount,
+html.dark .offer-card__price-unit,
+html.dark .offer-card__price del,
+html.dark .home-unit-weight-hint {
+  color: var(--dm-text-muted);
+}
+
+html.dark .product-card__price,
+html.dark .product-card__price--current,
+html.dark .offer-card__price,
+html.dark .offer-card__button {
+  color: var(--dm-primary);
+}
+
+html.dark .offer-card__button:hover {
+  color: var(--dm-primary-hover);
+}
+
+html.dark .offer-card__tag {
+  background-color: rgba(245, 158, 11, 0.16);
+  color: #fbbf24;
+}
+
+html.dark .offer-card__tag--green {
+  background-color: var(--dm-elevated);
+  color: var(--dm-primary);
+}
+
+html.dark .product-card__button,
+html.dark .recipe-card__button {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .product-card__button:hover,
+html.dark .recipe-card__button:hover {
+  background-color: var(--dm-primary-hover);
+}
+
+html.dark .recipe-card__btn-secondary {
+  background-color: transparent;
+  border-color: var(--dm-primary);
+  color: var(--dm-primary);
+}
+
+html.dark .recipe-card__btn-secondary:hover {
+  background-color: var(--dm-elevated);
+}
+
+html.dark .qty-stepper,
+html.dark .home-unit-selector {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+}
+
+html.dark .qty-stepper__btn {
+  background-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .qty-stepper__btn:hover {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .qty-stepper__input {
+  color: var(--dm-text);
+}
+
+html.dark .home-unit-pill {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .home-unit-pill:hover {
+  color: var(--dm-text);
+}
+
+html.dark .home-unit-pill.active {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .recipe-card__offer-banner {
+  background: linear-gradient(90deg, #2b1f10 0%, #382712 100%);
+  border-bottom-color: #784d15;
+}
+
+html.dark .recipe-card__offer-main {
+  color: #fde68a;
+}
+
+html.dark .recipe-card__offer-sub {
+  color: #fbbf24;
+}
+
+html.dark .benefit-card__icon-wrapper {
+  background-color: var(--dm-card);
+  border: 1px solid var(--dm-border-strong);
+}
+
+html.dark .benefit-card:hover .benefit-card__icon-wrapper {
+  background-color: var(--dm-elevated);
+}
+
+html.dark .benefit-card__icon-svg {
+  stroke: var(--dm-primary);
+}
+
+/* ==========================================================================
+   4. PÁGINA PRODUCTOS
+   ========================================================================== */
+html.dark .productos-page {
+  background-color: var(--dm-bg);
+  color: var(--dm-text);
+}
+
+html.dark .productos-page .titulo-productos h1,
+html.dark .productos-page .producto-nombre {
+  color: var(--dm-text);
+}
+
+html.dark .productos-page .titulo-productos p,
+html.dark .productos-page .producto-descripcion {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .productos-page .buscador {
+  background-color: var(--dm-card);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text-secondary);
+}
+
+html.dark .productos-page .buscador input {
+  color: var(--dm-text);
+}
+
+html.dark .productos-page .buscador input::placeholder {
+  color: var(--dm-text-muted);
+}
+
+html.dark .productos-page .filtro {
+  background-color: var(--dm-card);
+  color: var(--dm-text-secondary);
+  border: 1px solid var(--dm-border);
+}
+
+html.dark .productos-page .filtro:hover {
+  background-color: var(--dm-elevated);
+  color: var(--dm-primary);
+}
+
+html.dark .productos-page .filtro.activo {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+  border-color: var(--dm-primary);
+}
+
+html.dark .productos-page .producto-card {
+  background-color: var(--dm-card);
+  border-color: var(--dm-border);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+}
+
+html.dark .productos-page .producto-categoria,
+html.dark .productos-page .producto-unidad,
+html.dark .productos-page .producto-peso-aprox,
+html.dark .productos-page .precio-anterior {
+  color: var(--dm-text-muted);
+}
+
+html.dark .productos-page .precio-actual {
+  color: var(--dm-primary);
+}
+
+html.dark .productos-page .unidad-fija-tag {
+  background-color: var(--dm-elevated);
+  color: var(--dm-primary);
+}
+
+html.dark .productos-page .unidad-selector,
+html.dark .productos-page .producto-stepper {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+}
+
+html.dark .productos-page .unidad-pill {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .productos-page .unidad-pill:hover {
+  color: var(--dm-text);
+}
+
+html.dark .productos-page .unidad-pill.activo {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .productos-page .producto-stepper__btn {
+  background-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .productos-page .producto-stepper__btn:hover {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .productos-page .producto-stepper__input {
+  color: var(--dm-text);
+}
+
+html.dark .productos-page .btn-agregar {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .productos-page .btn-agregar:hover {
+  background-color: var(--dm-primary-hover);
+}
+
+/* ==========================================================================
+   5. PÁGINA RECETAS (Fiel al Mockup Oscuro de Figma Make)
+   ========================================================================== */
+html.dark .badge-destacada {
+  background-color: var(--dm-card);
+  color: var(--dm-primary);
+  border: 1px solid var(--dm-border-strong);
+}
+
+html.dark .recetas-hero h1 {
+  color: var(--dm-text);
+}
+
+html.dark .hero-description {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .steps-box {
+  background-color: var(--dm-card);
+  border-color: var(--dm-border);
+}
+
+html.dark .step-item {
+  color: var(--dm-text);
+}
+
+html.dark .step-number {
+  color: rgba(129, 199, 132, 0.32);
+}
+
+html.dark .step-arrow {
+  color: var(--dm-text-muted);
+}
+
+html.dark .filter-btn {
+  background-color: var(--dm-card);
+  color: var(--dm-text-secondary);
+  border: 1px solid var(--dm-border);
+}
+
+html.dark .filter-btn:hover {
+  background-color: var(--dm-elevated);
+  color: var(--dm-text);
+}
+
+html.dark .filter-btn.active {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+  border-color: var(--dm-primary);
+  font-weight: 700;
+}
+
+html.dark .filter-btn--offer {
+  background-color: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+html.dark .filter-btn--offer:hover {
+  background-color: rgba(245, 158, 11, 0.24);
+}
+
+html.dark .filter-btn--offer.active {
+  background-color: var(--dm-amber);
+  color: var(--dm-on-primary);
+  border-color: var(--dm-amber);
+}
+
+html.dark .receta-card {
+  background-color: var(--dm-card);
+  border: 1px solid var(--dm-border);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
+}
+
+html.dark .receta-card--has-offer {
+  border: 1.5px solid #d97706;
+}
+
+html.dark .receta-card__offer-banner {
+  background: linear-gradient(90deg, #2b1f10 0%, #382712 100%);
+  border-bottom-color: #784d15;
+}
+
+html.dark .receta-card__offer-main {
+  color: #fde68a;
+}
+
+html.dark .receta-card__offer-sub {
+  color: #fbbf24;
+}
+
+html.dark .receta-card .badge-diff {
+  background-color: rgba(45, 106, 79, 0.88);
+  color: #a7f3d0;
+}
+
+html.dark .receta-card__title {
+  color: var(--dm-text);
+}
+
+html.dark .receta-card__desc {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .receta-card__meta {
+  color: var(--dm-text-muted);
+}
+
+html.dark .receta-card__btn {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+  font-weight: 700;
+}
+
+html.dark .receta-card__btn:hover {
+  background-color: var(--dm-primary-hover);
+}
+
+html.dark .receta-card__btn-secondary {
+  background-color: transparent;
+  color: var(--dm-primary);
+  border-color: var(--dm-primary);
+}
+
+html.dark .receta-card__btn-secondary:hover {
+  background-color: var(--dm-elevated);
+}
+
+html.dark .scroll-arrow {
+  background-color: var(--dm-card);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-primary);
+}
+
+/* ==========================================================================
+   6. DETALLE DE RECETA
+   ========================================================================== */
+html.dark .detalle-main {
+  background-color: var(--dm-bg);
+}
+
+html.dark .detalle-back-link {
+  color: var(--dm-primary);
+}
+
+html.dark .detalle-container {
+  background-color: var(--dm-card);
+  border: 1px solid var(--dm-border);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .detalle-section-title,
+html.dark .detalle-personas-title,
+html.dark .ingredient-name {
+  color: var(--dm-text);
+}
+
+html.dark .ingredients-panel h3.detalle-section-title[style] {
+  color: var(--dm-text-secondary) !important;
+}
+
+html.dark .ingredients-panel > div[style] {
+  border-top-color: var(--dm-border) !important;
+}
+
+html.dark .paso-item {
+  background-color: var(--dm-elevated);
+  border-left-color: var(--dm-primary);
+}
+
+html.dark .paso-number {
+  color: var(--dm-primary);
+}
+
+html.dark .paso-text {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .ingredients-panel {
+  background-color: var(--dm-bg-alt);
+  border-color: var(--dm-border-strong);
+}
+
+html.dark .detalle-persona-btn,
+html.dark .detalle-custom-personas {
+  background-color: var(--dm-card);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .detalle-persona-btn:hover {
+  border-color: var(--dm-primary);
+}
+
+html.dark .detalle-persona-btn.active {
+  background-color: var(--dm-primary);
+  border-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .detalle-custom-personas.active {
+  border-color: var(--dm-primary);
+}
+
+html.dark .detalle-custom-label,
+html.dark .cost-label,
+html.dark .cost-per-person,
+html.dark .ingredient-qty {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .detalle-custom-input {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .detalle-offer-alert {
+  background: linear-gradient(135deg, #2b1f10 0%, #382712 100%);
+  border-color: #d97706;
+}
+
+html.dark .detalle-offer-alert__title {
+  color: #fde68a;
+}
+
+html.dark .detalle-offer-alert__desc {
+  color: #fbbf24;
+}
+
+html.dark .cost-box {
+  background-color: var(--dm-card);
+  border: 1px solid var(--dm-border);
+  box-shadow: none;
+}
+
+html.dark .cost-value,
+html.dark .ingredient-price {
+  color: var(--dm-primary);
+}
+
+html.dark .cost-original,
+html.dark .ingredient-price-old {
+  color: var(--dm-text-muted);
+}
+
+html.dark .cost-savings-pill,
+html.dark .ingredient-offer-tag {
+  background-color: rgba(245, 158, 11, 0.16);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+html.dark .ingredient-item {
+  border-bottom-color: var(--dm-border);
+}
+
+html.dark .ingredient-item__img {
+  border-color: var(--dm-border-strong);
+  background-color: var(--dm-elevated);
+}
+
+html.dark .ingredient-toggle-btn {
+  background-color: var(--dm-card);
+  border-color: var(--dm-border-strong);
+  color: #f87171;
+}
+
+html.dark .ingredient-toggle-btn:hover {
+  background-color: rgba(239, 68, 68, 0.14);
+  border-color: #ef4444;
+}
+
+html.dark .ingredient-toggle-btn.restore {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-primary);
+  color: var(--dm-primary);
+}
+
+html.dark .btn-buy-all {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .btn-buy-all:hover:not(:disabled) {
+  background-color: var(--dm-primary-hover);
+}
+
+/* ==========================================================================
+   7. MIS PEDIDOS, PERFIL & CONTACTO
+   ========================================================================== */
+html.dark .pedidos-page h1,
+html.dark .pedidos-page .container-unregistered h1,
+html.dark .pedidos-page .top-info p:first-child,
+html.dark .pedidos-page .pedido-item-left strong {
+  color: var(--dm-text);
+}
+
+html.dark .pedidos-page .container-unregistered p,
+html.dark .pedidos-page .container-registered > p,
+html.dark .pedidos-page .order-number,
+html.dark .pedidos-page .lower-info,
+html.dark .pedidos-page .pedido-meta-extra,
+html.dark .pedidos-page .pedido-item-left span {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .pedidos-page .container-unregistered,
+html.dark .pedidos-page .pedido-wrapper,
+html.dark .pedidos-page .pedido-item-row {
+  background-color: var(--dm-card);
+  border-color: var(--dm-border);
+}
+
+html.dark .pedidos-page .pedido-wrapper:hover {
+  border-color: var(--dm-primary);
+}
+
+html.dark .pedidos-page .icon-conteiner {
+  background-color: var(--dm-elevated);
+  color: var(--dm-primary);
+}
+
+html.dark .pedidos-page .btn-ingresar-pedidos {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .pedidos-page .btn-ingresar-pedidos:hover {
+  background-color: var(--dm-primary-hover);
+}
+
+html.dark .pedidos-page .precio,
+html.dark .pedidos-page .detalle,
+html.dark .pedidos-page .pedido-item-subtotal {
+  color: var(--dm-primary);
+}
+
+html.dark .pedidos-page .pedido-desplegable {
+  background-color: var(--dm-bg-alt);
+  border-top-color: var(--dm-border);
+}
+
+html.dark .pedidos-page .btn-repetir-pedido {
+  background-color: transparent;
+  color: var(--dm-primary);
+  border-color: var(--dm-primary);
+}
+
+html.dark .pedidos-page .btn-repetir-pedido:hover {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .pedidos-page .preparando {
+  background-color: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+}
+
+html.dark .pedidos-page .en-camino {
+  background-color: rgba(99, 102, 241, 0.22);
+  color: #a5b4fc;
+}
+
+html.dark .pedidos-page .entregado {
+  background-color: rgba(129, 199, 132, 0.2);
+  color: var(--dm-primary);
+}
+
+/* Perfil */
+html.dark .perfil-container h1,
+html.dark .usuario-info h2,
+html.dark .form-perfil h3 {
+  color: var(--dm-text);
+}
+
+html.dark .usuario-info p,
+html.dark .dato-titulo,
+html.dark .form-perfil label {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .perfil-card {
+  background-color: var(--dm-card);
+  border-color: var(--dm-border);
+}
+
+html.dark .avatar {
+  background-color: var(--dm-elevated);
+  color: var(--dm-primary);
+}
+
+html.dark .dato-valor {
+  background-color: var(--dm-elevated);
+  color: var(--dm-text);
+  border: 1px solid var(--dm-border);
+}
+
+html.dark .form-perfil {
+  border-top-color: var(--dm-border);
+}
+
+html.dark .form-perfil input {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .form-perfil input:focus {
+  background-color: var(--dm-bg);
+  border-color: var(--dm-primary);
+}
+
+html.dark .btn-editar,
+html.dark .cambiar-pass {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .btn-editar:hover,
+html.dark .cambiar-pass:hover {
+  border-color: var(--dm-primary);
+  color: var(--dm-primary);
+}
+
+html.dark .btn-guardar {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .btn-guardar:hover {
+  background-color: var(--dm-primary-hover);
+}
+
+html.dark .btn-logout {
+  background-color: rgba(239, 68, 68, 0.16);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+html.dark .btn-logout:hover {
+  background-color: rgba(239, 68, 68, 0.26);
+}
+
+html.dark .perfil-danger-zone {
+  border-top-color: var(--dm-border);
+}
+
+html.dark .perfil-danger-info strong {
+  color: #fca5a5;
+}
+
+html.dark .perfil-danger-info p {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .btn-eliminar-cuenta {
+  background-color: transparent;
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+html.dark .btn-eliminar-cuenta:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+/* Contacto */
+html.dark .contacto-page h1,
+html.dark .contacto-page h3,
+html.dark .contacto-page label {
+  color: var(--dm-text);
+}
+
+html.dark .contacto-page .contact-date {
+  background-color: var(--dm-card);
+  border: 1px solid var(--dm-border);
+  color: var(--dm-text-secondary);
+}
+
+html.dark .contacto-page .form,
+html.dark .contacto-page .aside-text {
+  background-color: var(--dm-card);
+  border: 1px solid var(--dm-border);
+  color: var(--dm-text);
+}
+
+html.dark .contacto-page .aside-text:hover {
+  color: var(--dm-primary);
+}
+
+html.dark .contacto-page input,
+html.dark .contacto-page textarea {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .contacto-page input::placeholder,
+html.dark .contacto-page textarea::placeholder {
+  color: var(--dm-text-muted);
+}
+
+html.dark .contacto-page .btn-submit {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .contacto-page .btn-submit:hover {
+  background-color: var(--dm-primary-hover);
+}
+
+/* ==========================================================================
+   8. MODALES Y CARRITO DESPLEGABLE (CartDrawer, PrepararCompra, LoginModal)
+   ========================================================================== */
+html.dark .cart-drawer {
+  background-color: var(--dm-bg-alt);
+  color: var(--dm-text);
+}
+
+html.dark .cart-drawer__header,
+html.dark .cart-drawer__footer {
+  background-color: var(--dm-card);
+  border-color: var(--dm-border);
+}
+
+html.dark .cart-drawer__icon-circle {
+  background-color: var(--dm-elevated);
+  color: var(--dm-primary);
+}
+
+html.dark .cart-drawer__title,
+html.dark .cart-item__name,
+html.dark .cart-checkout-box__heading,
+html.dark .cart-summary__row--total,
+html.dark .cart-drawer__empty h3,
+html.dark .cart-drawer__success h3,
+html.dark .cart-drawer__success-row strong {
+  color: var(--dm-text);
+}
+
+html.dark .cart-drawer__subtitle,
+html.dark .cart-item__unit-label,
+html.dark .cart-field label,
+html.dark .cart-summary__row,
+html.dark .cart-login-callout p,
+html.dark .cart-drawer__empty p,
+html.dark .cart-drawer__success-lead,
+html.dark .cart-drawer__success-row {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .cart-drawer__close-btn {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .cart-drawer__close-btn:hover {
+  border-color: var(--dm-primary);
+  color: var(--dm-primary);
+}
+
+html.dark .cart-drawer__clear-btn {
+  background-color: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+
+html.dark .cart-item,
+html.dark .cart-checkout-box,
+html.dark .cart-drawer__success-card {
+  background-color: var(--dm-card);
+  border-color: var(--dm-border);
+}
+
+html.dark .cart-item:hover {
+  border-color: var(--dm-border-strong);
+}
+
+html.dark .cart-item__img {
+  border-color: var(--dm-border);
+}
+
+html.dark .cart-item__offer-pill,
+html.dark .cart-drawer__status-pill {
+  background-color: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
+html.dark .cart-item__unit-pills,
+html.dark .cart-item__stepper {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+}
+
+html.dark .cart-item__unit-pill {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .cart-item__unit-pill:hover {
+  color: var(--dm-text);
+}
+
+html.dark .cart-item__unit-pill.active {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .cart-item__step-btn {
+  background-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .cart-item__step-btn:hover {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .cart-item__qty {
+  color: var(--dm-text);
+}
+
+html.dark .cart-item__approx-weight {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text-secondary);
+}
+
+html.dark .cart-item__price,
+html.dark .cart-summary__free,
+html.dark .cart-summary__row--total span:last-child,
+html.dark .cart-drawer__success-row--total strong {
+  color: var(--dm-primary);
+}
+
+html.dark .cart-item__price-old,
+html.dark .cart-summary__muted {
+  color: var(--dm-text-muted);
+}
+
+html.dark .cart-toggle-pill {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text-secondary);
+}
+
+html.dark .cart-toggle-pill:hover {
+  border-color: var(--dm-primary);
+  color: var(--dm-text);
+}
+
+html.dark .cart-toggle-pill.active {
+  background-color: rgba(129, 199, 132, 0.16);
+  border-color: var(--dm-primary);
+  color: var(--dm-primary);
+}
+
+html.dark .cart-field input {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .cart-field input::placeholder {
+  color: var(--dm-text-muted);
+}
+
+html.dark .cart-pickup-note {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text-secondary);
+}
+
+html.dark .cart-summary__row--total,
+html.dark .cart-drawer__success-row--total {
+  border-top-color: var(--dm-border);
+}
+
+html.dark .cart-drawer__confirm-btn {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .cart-drawer__confirm-btn:hover:not(:disabled) {
+  background-color: var(--dm-primary-hover);
+}
+
+html.dark .cart-drawer__secondary-btn {
+  background-color: transparent;
+  color: var(--dm-primary);
+  border-color: var(--dm-primary);
+}
+
+html.dark .cart-drawer__secondary-btn:hover {
+  background-color: var(--dm-elevated);
+}
+
+html.dark .cart-drawer__empty-icon {
+  background-color: var(--dm-card);
+  border: 1px solid var(--dm-border);
+}
+
+/* Modal Preparar Compra */
+html.dark .prep-modal {
+  background-color: var(--dm-card);
+  border: 1px solid var(--dm-border);
+}
+
+html.dark .prep-modal__footer {
+  background-color: var(--dm-card);
+  border-top-color: var(--dm-border);
+}
+
+html.dark .prep-modal__offer-banner {
+  background: linear-gradient(135deg, #2b1f10 0%, #382712 100%);
+  border-color: #d97706;
+}
+
+html.dark .prep-modal__offer-main {
+  color: #fde68a;
+}
+
+html.dark .prep-modal__offer-sub {
+  color: #fbbf24;
+}
+
+html.dark .prep-modal__section-title,
+html.dark .prep-ing-item__name {
+  color: var(--dm-text);
+}
+
+html.dark .prep-persona-btn,
+html.dark .prep-modal__custom-personas {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .prep-persona-btn:hover {
+  border-color: var(--dm-primary);
+  background-color: var(--dm-elevated);
+}
+
+html.dark .prep-persona-btn.active {
+  background-color: var(--dm-primary);
+  border-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .prep-modal__custom-personas.active {
+  border-color: var(--dm-primary);
+  background-color: rgba(129, 199, 132, 0.12);
+}
+
+html.dark .prep-custom-label,
+html.dark .prep-custom-unit,
+html.dark .prep-ing-item__qty,
+html.dark .prep-modal__total-label {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .prep-custom-input {
+  background-color: var(--dm-bg);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .prep-ing-item {
+  border-bottom-color: var(--dm-border);
+}
+
+html.dark .prep-ing-item__img {
+  border-color: var(--dm-border-strong);
+}
+
+html.dark .prep-ing-item__price,
+html.dark .prep-modal__total-value {
+  color: var(--dm-primary);
+}
+
+html.dark .prep-ing-item__price-old,
+html.dark .prep-modal__total-old {
+  color: var(--dm-text-muted);
+}
+
+html.dark .prep-ing-item__offer-tag,
+html.dark .prep-modal__savings-badge {
+  background-color: rgba(245, 158, 11, 0.16);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+html.dark .prep-ing-toggle-btn {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+  color: #f87171;
+}
+
+html.dark .prep-ing-toggle-btn.restore {
+  background-color: rgba(129, 199, 132, 0.12);
+  border-color: var(--dm-primary);
+  color: var(--dm-primary);
+}
+
+html.dark .prep-modal__submit-btn {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .prep-modal__submit-btn:hover:not(:disabled) {
+  background-color: var(--dm-primary-hover);
+}
+
+/* Modal Login / Registro */
+html.dark .modal-content {
+  background-color: var(--dm-card);
+  border: 1px solid var(--dm-border);
+}
+
+html.dark .modal-header h3 {
+  color: var(--dm-text);
+}
+
+html.dark .modal-header p,
+html.dark .modal-footer p {
+  color: var(--dm-text-secondary);
+}
+
+html.dark .input-ingresar {
+  background-color: var(--dm-elevated);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-text);
+}
+
+html.dark .modal-form input::placeholder {
+  color: var(--dm-text-muted);
+}
+
+html.dark .ingresar-button {
+  background-color: var(--dm-primary);
+  color: var(--dm-on-primary);
+}
+
+html.dark .ingresar-button:hover {
+  background-color: var(--dm-primary-hover);
+}
+
+html.dark .btn-registro {
+  color: var(--dm-primary);
+}
+
+html.dark .btn-close {
+  color: var(--dm-text);
+}

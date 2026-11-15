@@ -12,10 +12,27 @@ import RecetaDetalle from './Pages/RecetaDetalle';
 import Pedidos from './Pages/Pedidos';
 import Contacto from './Pages/Contacto';
 import Perfil from './Pages/Perfil';
+import {
+  buildCartItem,
+  convertCartItemUnit,
+  fallbackData,
+  fetchWithFallback,
+  mergeIntoCart,
+  normalizeCartUnit,
+  updateCartItemQuantity,
+} from './data/mockData';
+import './styles/DarkMode.css';
 
 function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    try {
+      return localStorage.getItem('tema_tiziana') === 'dark';
+    } catch {
+      return false;
+    }
+  });
 
   const [usuarioActual, setUsuarioActual] = useState(() => {
     const id = sessionStorage.getItem('idUsuario');
@@ -93,6 +110,16 @@ function App() {
   }, [usuarioActual]);
 
   const usuarioActivo = usuarioActual === null ? null : usuarioObj;
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    document.body.classList.toggle('dark', darkMode);
+    try {
+      localStorage.setItem('tema_tiziana', darkMode ? 'dark' : 'light');
+    } catch {
+      // ignore storage errors
+    }
+  }, [darkMode]);
 
   useEffect(() => {
     try {
@@ -248,11 +275,15 @@ function App() {
     showToast(`¡Pedido #${nuevoPedido.nroPedido} confirmado con éxito!`);
   };
 
-  const handleLogout = () => {
+  const handleLogout = (customMsg) => {
     sessionStorage.removeItem('idUsuario');
     setUsuarioActual(null);
     setUsuarioObj(null);
-    showToast('Cerraste sesión correctamente.');
+    showToast(
+      typeof customMsg === 'string' && customMsg
+        ? customMsg
+        : 'Cerraste sesión correctamente.'
+    );
   };
 
   return (
@@ -262,6 +293,8 @@ function App() {
         onOpenCart={() => setIsCartOpen(true)}
         cartCount={cartItems.length}
         usuarioId={usuarioActual}
+        darkMode={darkMode}
+        onToggleTheme={() => setDarkMode((prev) => !prev)}
       />
       <main>
         <Routes>
@@ -299,7 +332,7 @@ function App() {
           />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/perfil" element={<Perfil usuarioId={usuarioActual} onLogout={handleLogout} />}
-/>
+          />
         </Routes>
       </main>
       <Footer />
