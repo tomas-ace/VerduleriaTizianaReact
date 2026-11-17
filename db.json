@@ -257,6 +257,16 @@
       "telefono": "1169593444",
       "direccion": "Av Siempre Viva 742",
       "contrasena": "1234"
+    },
+    {
+      "id": 5,
+      "nombre": "Tomas",
+      "apellido": "Acevedo",
+      "mail": "tomas@mail.com",
+      "nombreUsuario": "tomas",
+      "telefono": "6552621",
+      "direccion": "Brasil 1234",
+      "contrasena": "1234"
     }
   ],
   "usuarioDireccion": [
@@ -326,6 +336,19 @@
       "notas": "Retiro a las 20hs, favor de tener el pedido listo.",
       "total": 733,
       "ahorroTotal": 162
+    },
+    {
+      "id": 1006,
+      "nroPedido": 1006,
+      "estado": "Preparando",
+      "idUsuario": 1,
+      "fecha": "2026-11-17T17:39:38.222Z",
+      "metodoPago": "Mercado Pago",
+      "tipoEntrega": "Envío a domicilio",
+      "direccion": "Av. Libertador 2021",
+      "notas": "",
+      "total": 1100,
+      "ahorroTotal": 150
     }
   ],
   "pedidoDetalle": [
@@ -411,6 +434,30 @@
       "displayQty": "400 gramos",
       "precio": 0.5,
       "subtotal": 200
+    },
+    {
+      "id": 10,
+      "idPedido": 1006,
+      "idProducto": 1,
+      "nombre": "Tomate Perita",
+      "imagen": "/assets/productos-img/tomate-redondo.png",
+      "cantidad": 0.5,
+      "unidad": "kg",
+      "displayQty": "0.5 kg",
+      "precio": 900,
+      "subtotal": 450
+    },
+    {
+      "id": 11,
+      "idPedido": 1006,
+      "idProducto": 6,
+      "nombre": "Banana",
+      "imagen": "/assets/productos-img/banana.jpg",
+      "cantidad": 0.5,
+      "unidad": "kg",
+      "displayQty": "0.5 kg",
+      "precio": 1300,
+      "subtotal": 650
     }
   ],
   "recetas": [

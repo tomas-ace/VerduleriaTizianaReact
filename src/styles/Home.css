@@ -1188,3 +1188,25 @@
     margin: 0 auto;
   }
 }
+
+
+.recipe-card__actions {
+  min-width: 0;
+  gap: 0.5rem;
+}
+
+.recipe-card__btn-secondary {
+  min-width: 0;
+  flex: 0.85;
+  padding: 0.75rem 0.3rem;
+  font-size: 0.8rem;
+}
+
+.recipe-card__button {
+  min-width: 0;
+  flex: 1.15;
+  padding: 0.75rem 0.3rem;
+  font-size: 0.8rem;
+  white-space: normal;
+  text-align: center;
+}
